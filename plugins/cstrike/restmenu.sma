@@ -794,86 +794,6 @@ loadSettings(filename[])
 	return 1
 }
 
-// JGHG
-public fn_setautobuy(id)
-{
-	// Empty user's autobuy prefs. (unnecessary?)
-	g_Autobuy[id][0] = '^0'
-
-	new argCount = read_argc()
-	new arg[128]
-	new autobuyLen = 0
-	
-	for (new i = 1; i < argCount; i++)		// Start at parameter 1; parameter 0 is just "cl_setautobuy"
-	{
-		read_argv(i, arg, 127)
-		// Add this parameter to user's autobuy prefs
-		autobuyLen += format(g_Autobuy[id][autobuyLen], AUTOBUYLENGTH - autobuyLen, "%s", arg)
-		
-		// If we detect more parameters, add a space
-		if (i + 1 < argCount)
-			autobuyLen += format(g_Autobuy[id][autobuyLen], AUTOBUYLENGTH - autobuyLen, " ")
-	}
-
-	if (g_AliasBlockNum)
-	{
-		// Strip any blocked items
-		new strippedItems[AUTOBUYLENGTH + 1]
-	
-		if (!StripBlockedItems(g_Autobuy[id], strippedItems))
-			return PLUGIN_CONTINUE				// don't touch anything if we didn't strip anything...
-
-		//server_print("Stripped items: ^"%s^"", strippedItems)
-		engclient_cmd(id, "cl_setautobuy", strippedItems)
-
-		return PLUGIN_HANDLED
-	}
-	
-	return PLUGIN_CONTINUE
-}
-
-// Returns true if this strips any items, else false.
-StripBlockedItems(inString[AUTOBUYLENGTH + 1], outString[AUTOBUYLENGTH + 1])
-{
-	// First copy string
-	format(outString, AUTOBUYLENGTH, inString)
-
-	// After that convert all chars in string to lower case (fix by VEN)
-	strtolower(outString)
-
-	// Then strip those that are blocked.
-	for (new i = 0; i < g_AliasBlockNum; i++)
-	{
-		while (containi(outString, g_Aliases[g_AliasBlock[i]]) != -1)
-			replace(outString, AUTOBUYLENGTH, g_Aliases[g_AliasBlock[i]], "")
-		while (containi(outString, g_Aliases2[g_AliasBlock[i]]) != -1)
-			replace(outString, AUTOBUYLENGTH, g_Aliases2[g_AliasBlock[i]], "")
-	}
-
-	// We COULD trim white space from outString here, but I don't think it really is necessary currently...
-	if (strlen(outString) < strlen(inString))
-		return true							// outstring is shorter: we stripped items, return true
-
-	return false							// else end here, return false, no items were stripped
-}
-
-public fn_autobuy(id)
-{
-	// Don't do anything if no items are blocked.
-	if (!g_AliasBlockNum)
-		return PLUGIN_CONTINUE
-
-	// Strip any blocked items
-	new strippedItems[AUTOBUYLENGTH + 1]
-	
-	if (!StripBlockedItems(g_Autobuy[id], strippedItems))
-		return PLUGIN_CONTINUE				// don't touch anything if we didn't strip anything...
-
-	engclient_cmd(id, "cl_setautobuy", strippedItems)
-	
-	return PLUGIN_HANDLED
-}
-
 public HookEvent_ShowMenu(id)
 {
 	new menustring[24]
@@ -945,8 +865,6 @@ public plugin_init()
 	register_dictionary("common.txt")
 	register_clcmd("buyammo1", "ammoRest1")
 	register_clcmd("buyammo2", "ammoRest2")
-	register_clcmd("cl_setautobuy", "fn_setautobuy")
-	register_clcmd("cl_autobuy", "fn_autobuy")
 	register_clcmd("amx_restmenu", "cmdMenu", ADMIN_CFG, "- displays weapons restriction menu")
 	register_menucmd(register_menuid("#Buy", 1), 511, "menuBuy")
 	register_menucmd(register_menuid("Restrict Weapons"), 1023, "actionMenu")

@@ -47,8 +47,6 @@ new g_saveFile[64]
 new g_Restricted[] = "* This item is restricted *"
 new g_szWeapRestr[27] = "00000000000000000000000000"
 new g_szEquipAmmoRestr[10] = "000000000"
-new g_InBuyMenu[33]
-new g_RegisteredMenus[10]
 
 new g_menuStrings[6][] =
 {
@@ -258,66 +256,6 @@ new g_Aliases[MAXMENUPOS][] =
 
 	"primammo", //Ammo
 	"secammo"
-}
-
-new g_Aliases2[MAXMENUPOS][] =
-{
-	"km45",		//Pistols
-	"9x19mm", 
-	"nighthawk", 
-	"228compact", 
-	"elites", 
-	"fiveseven", 
-
-	"12gauge",	//Shotguns
-	"autoshotgun", 
-
-	"smg",		//SMG
-	"mp", 
-	"c90", 
-	"mac10", 
-	"ump45", 
-
-	"cv47",		//Rifles
-	"defender", 
-	"clarion", 
-	"krieg552", 
-	"m4a1", 
-	"bullpup", 
-	"scout", 
-	"magnum", 
-	"d3au1", 
-	"krieg550", 
-
-	"m249",		//Machine Gun
-
-	"vest",		//Equipment
-	"vesthelm", 
-	"flash", 
-	"hegren", 
-	"sgren", 
-	"defuser", 
-	"nvgs", 
-	"shield", 
-	"primammo", //Ammo
-	"secammo"
-}
-
-#define AUTOBUYLENGTH 511
-new g_Autobuy[33][AUTOBUYLENGTH + 1]
-//new g_Rebuy[33][AUTOBUYLENGTH + 1]
-
-bool:IsOurMenuID(id)
-{
-	for (new i=1; i<=g_RegisteredMenus[0]; i++)
-	{
-		if (g_RegisteredMenus[i] == id)
-		{
-			return true
-		}
-	}
-	
-	return false
 }
 
 setWeapon(a, action)
@@ -623,69 +561,6 @@ public actionMenu(id, key)
 	return PLUGIN_HANDLED
 }
 
-public CS_InternalCommand(id, const cmd[])
-{
-	new a = 0
-
-	do
-	{
-		if (equali(g_Aliases[g_AliasBlock[a]], cmd) || equali(g_Aliases2[g_AliasBlock[a]], cmd))
-		{
-			client_print(id, print_center, "%s", g_Restricted)
-			return PLUGIN_HANDLED
-		}
-	} while (++a < g_AliasBlockNum)
-	
-	return PLUGIN_CONTINUE
-}
-
-public client_command(id)
-{
-	if (g_AliasBlockNum)
-	{
-		new arg[13]
-
-		if (read_argv(0, arg, 12) > 11)		/* Longest buy command has 11 chars so if command is longer then don't care */
-		{
-			return PLUGIN_CONTINUE
-		}
-		
-		if (equali(arg, "menuselect") && is_user_connected(id))
-		{
-			new menu, newmenu
-			new inMenu = player_menu_info(id, menu, newmenu)
-			
-			if (!inMenu && g_InBuyMenu[id])
-			{
-				new key[12], num
-				
-				read_argv(1, key, 11)
-				num = str_to_num(key) - 1
-				
-				return checkRest(id, g_InBuyMenu[id], num)
-			} else if ((!menu || newmenu != -1) 
-					 || !IsOurMenuID(menu)) {
-				g_InBuyMenu[id] = 0
-			}
-
-			return PLUGIN_CONTINUE
-		}
-
-		new a = 0
-
-		do
-		{
-			if (equali(g_Aliases[g_AliasBlock[a]], arg) || equali(g_Aliases2[g_AliasBlock[a]], arg))
-			{
-				client_print(id, print_center, "%s", g_Restricted)
-				return PLUGIN_HANDLED
-			}
-		} while (++a < g_AliasBlockNum)
-	}
-	
-	return PLUGIN_CONTINUE
-}
-
 public blockcommand(id)
 {
 	client_print(id, print_center, "%s", g_Restricted)
@@ -701,43 +576,6 @@ public cmdMenu(id, level, cid)
 	
 	return PLUGIN_HANDLED
 }
-
-checkRest(id, menu, key)
-{
-	new team = get_user_team(id)
-	
-	if (team != 1 && team != 2)
-	{
-		return PLUGIN_HANDLED
-	}
-		
-	new pos = (menu * 8 + key) + (get_user_team(id) - 1) * 56
-	
-	if (pos < 0 || pos >= 112)
-	{
-		return PLUGIN_CONTINUE
-	}
-	
-	if (g_blockPos[pos])
-	{
-		engclient_cmd(id, "menuselect", "10")
-		client_print(id, print_center, "%s", g_Restricted)
-		
-		return PLUGIN_HANDLED
-	}
-	
-	return PLUGIN_CONTINUE
-}
-
-public ammoRest1(id)		return checkRest(id, 0, 5)
-public ammoRest2(id)        return checkRest(id, 0, 6)
-public menuBuy(id, key)     return checkRest(id, 0, key)
-public menuPistol(id, key)  return checkRest(id, 1, key)
-public menuShotgun(id, key) return checkRest(id, 2, key)
-public menuSub(id, key)     return checkRest(id, 3, key)
-public menuRifle(id, key)   return checkRest(id, 4, key)
-public menuMachine(id, key) return checkRest(id, 5, key)
-public menuItem(id, key)    return checkRest(id, 6, key)
 
 saveSettings(filename[])
 {
@@ -794,100 +632,18 @@ loadSettings(filename[])
 	return 1
 }
 
-public HookEvent_ShowMenu(id)
-{
-	new menustring[24]
-	
-	read_data(4, menustring, 23)
-	
-	/* Early breakouts */
-	new curidx
-	if (menustring[curidx++] != '#')
-	{
-		g_InBuyMenu[id] = 0
-		return
-	}
-	
-	/* Strip D */
-	if (menustring[curidx] == 'D')
-	{
-		curidx++
-	}
-	
-	/* Strip AS_ */
-	if (menustring[curidx] == 'A'
-	    && menustring[curidx+1] == 'S'
-	    && menustring[curidx+2] == '_')
-	{
-		curidx += 3
-	}
-	
-	/* Strip any team tags */
-	if (menustring[curidx] == 'C'
-	    && menustring[curidx+1] == 'T'
-	    && menustring[curidx+2] == '_')
-	{
-		curidx += 3
-	} else if (menustring[curidx] == 'T'
-			 && menustring[curidx+1] == '_') {
-		curidx += 2
-	}
-	
-	if (menustring[curidx] != 'B')
-	{
-		g_InBuyMenu[id] = 0
-		return
-	}
-	
-	for (new i=0; i<6; i++)
-	{
-		if (equali(menustring[curidx], g_menuStrings[i]))
-		{
-			g_InBuyMenu[id] = i+1
-			return
-		}
-	}
-	
-	g_InBuyMenu[id] = 0
-}
-
-RegisterMenuID(const menuname[])
-{
-	new id = register_menuid(menuname, 1)
-	g_RegisteredMenus[++g_RegisteredMenus[0]] = id
-	return id
-}
-
 public plugin_init()
 {
 	register_plugin("Restrict Weapons", AMXX_VERSION_STR, "AMXX Dev Team")
 	register_dictionary("restmenu.txt")
 	register_dictionary("common.txt")
-	register_clcmd("buyammo1", "ammoRest1")
-	register_clcmd("buyammo2", "ammoRest2")
 	register_clcmd("amx_restmenu", "cmdMenu", ADMIN_CFG, "- displays weapons restriction menu")
-	register_menucmd(register_menuid("#Buy", 1), 511, "menuBuy")
 	register_menucmd(register_menuid("Restrict Weapons"), 1023, "actionMenu")
-	register_menucmd(RegisterMenuID("BuyPistol"), 511, "menuPistol")
-	register_menucmd(RegisterMenuID("BuyShotgun"), 511, "menuShotgun")
-	register_menucmd(RegisterMenuID("BuySub"), 511, "menuSub")
-	register_menucmd(RegisterMenuID("BuyRifle"), 511, "menuRifle")
-	register_menucmd(RegisterMenuID("BuyMachine"), 511, "menuMachine")
-	register_menucmd(RegisterMenuID("BuyItem"), 511, "menuItem")
-	register_menucmd(-28, 511, "menuBuy")
-	register_menucmd(-29, 511, "menuPistol")
-	register_menucmd(-30, 511, "menuShotgun")
-	register_menucmd(-32, 511, "menuSub")
-	register_menucmd(-31, 511, "menuRifle")
-	register_menucmd(-33, 511, "menuMachine")
-	register_menucmd(-34, 511, "menuItem")
 	register_concmd("amx_restrict", "cmdRest", ADMIN_CFG, "- displays help for weapons restriction")
 
 	register_cvar("amx_restrweapons", "00000000000000000000000000")
 	register_cvar("amx_restrequipammo", "000000000")
 	
-	register_event("ShowMenu", "HookEvent_ShowMenu", "b")
-
 	new configsDir[64];
 	get_configsdir(configsDir, 63);
 #if defined MAPSETTINGS

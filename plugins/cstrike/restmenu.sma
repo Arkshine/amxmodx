@@ -447,6 +447,29 @@ findItemIdFromAlias(const alias[], &i = 0, &j = 0)
 	return -1;
 }
 
+prepareRestrictedItemsToCvars(itemId, posType, posItem, weapRestr[], equipAmmoRestr[], bool:toggleState = false)
+{
+	// Item type start index from multidimensional to flat array (e.g. AliasNames array format, item type -> {items list}).
+	// Fast way to translate from plugin array format (which is already in right order but multidimensional) to cvars format (flat).
+	static const baseItemIndexes[] = {/* weapon: */ 0, 6, 8, 13, 19, 23, /* equip: */ 0, 7};
+	new offset = baseItemIndexes[posType] + posItem;
+
+	if (posType >= ItemType_Equipment)
+	{	
+		if (itemId != CSI_SHIELD) 
+		{
+			equipAmmoRestr[offset] = toggleState ? (equipAmmoRestr[offset] == '1' ? '0' : '1') : '1';
+		}
+		else
+		{	// Special case for shields which needs to be considered as weapon.
+			weapRestr[25] = toggleState ? (weapRestr[25] == '1' ? '0' : '1') : '1';
+		}
+	}
+	else// Weapons
+	{	// +1 to skip knife at index 0.
+		weapRestr[offset + 1] = toggleState ? (weapRestr[offset + 1] == '1' ? '0' : '1') : '1';
+	}
+}
 
 public cmdRest(id, level, cid)
 {
@@ -549,6 +572,119 @@ public cmdRest(id, level, cid)
 	return PLUGIN_HANDLED
 }
 
+menu_fillblanks(menu, count, bool:newLineFirst = false)
+{
+	if (newLineFirst)
+	{
+		menu_addblank(menu, .slot = false);
+	}
+	
+	if (count > 0)
+	{	
+		while (--count >=0)
+		{
+			menu_addblank2(menu);
+		}
+	}
+}
+		
+displayMenu(id, itemType)
+{
+	if (itemType < 0) 
+	{
+		return;
+	}
+
+	new menuTitle[64], menuBody[128], i;
+	formatex(menuTitle, charsmax(menuTitle), "\y%L", id, "REST_WEAP");
+	
+	new menu = menu_create(menuTitle, "ActionMenu");
+	
+	// -1 because arrays are zero-based, avoids to do -1 everywhere below.
+	if (--itemType < 0)  // Main menu
+	{
+		for (i = 0; i < sizeof MenuTitleNames; ++i)
+		{
+			menu_additem(menu, MenuTitleNames[i]);
+		}
+	}
+	else // Sub-menus
+	{
+		// Add item type title to main title.
+		format(menuTitle, charsmax(menuTitle), "%s > \d%s", menuTitle, MenuTitleNames[itemType]);
+		menu_setprop(menu, MPROP_TITLE, menuTitle);
+		
+		for (i = 0; i < 8 && ItemsNames[itemType][i][0] != EOS; ++i)
+		{
+			formatex(menuBody, charsmax(menuBody), "%s\y\R%L", ItemsNames[itemType][i], id, isItemBlocked(itemType, i) ? "ON" : "OFF");
+			menu_additem(menu, menuBody);
+		}
+	}
+	
+	// Add blanks until Save is 9 as key.
+	menu_fillblanks(menu, itemType >= 0 ? 8 - i : 0, .newLineFirst = true);
+		
+	// Add Save item.
+	formatex(menuBody, charsmax(menuBody), "%L \y\R%s", id, "SAVE_SET", g_Modified ? "*" : "");
+	menu_additem(menu, menuBody);
+		
+	formatex(menuBody, charsmax(menuBody), "%L", id, itemType < 0 ? "EXIT" : "BACK");
+	menu_setprop(menu, MPROP_EXITNAME, menuBody);
+	menu_setprop(menu, MPROP_PERPAGE, 0);        // Disable pagination.
+	menu_setprop(menu, MPROP_EXIT, MEXIT_FORCE); // Force an EXIT item since pagination is disabled.
+	
+	menu_display(id, menu);
+}
+
+public ActionMenu(id, menu, item)
+{
+	new position = g_Position[id];
+	
+	if (item < 0)
+	{
+		if (position) 
+		{	// We are in a sub-menu and we want to go back to main menu.
+			displayMenu(id, position = 0);
+		}
+	}
+	else
+	{
+		if (item == 8) 
+		{
+			// Save item(s).
+			client_print(id, print_chat, "* %L", id, (g_Modified = !saveSettings(g_saveFile)) ? "CONF_SAV_FAIL" : "CONF_SAV_SUC");
+			displayMenu(id, position);
+		}
+		else if (!position) 
+		{
+			// We are right now in the main menu, go to sub-menu. 
+			displayMenu(id, position = item + 1);
+		}
+		else 
+		{	// We are right now in a sub-menu.
+			// We hit an item.
+			g_Modified = true;
+			
+			// Toggle item state.
+			new itemId = SlotToItemId[position - 1][item];
+			BlockedItems[itemId] = !BlockedItems[itemId];
+			
+			prepareRestrictedItemsToCvars(itemId, position - 1, item, g_szWeapRestr, g_szEquipAmmoRestr, .toggleState = true);
+			set_cvar_string("amx_restrweapons", g_szWeapRestr);
+			set_cvar_string("amx_restrequipammo", g_szEquipAmmoRestr);
+	
+			displayMenu(id, position);
+		}
+	}
+	
+	// Update position.
+	g_Position[id] = position;
+	
+	// Always!
+	menu_destroy(menu);
+	return PLUGIN_HANDLED;
+}
+
 public blockcommand(id)
 {
 	client_print(id, print_center, "%s", g_Restricted)
@@ -623,21 +759,7 @@ bool:loadSettings(const filename[])
 		if ((itemId = findItemIdFromAlias(lineRead, posType, posItem)) != -1)
 		{
 			BlockedItems[itemId] = true;
-
-			// Item type start index from multidimensional to flat array (e.g. AliasNames format, item type -> {items list}).
-			// Fast way to translate from plugin array format (which is already in right order but multidimensional) to cvars format (flat).
-			static const baseItemIndexes[] = {0, 6, 8, 13, 19, 23, 0, 7};
-			
-			if (posType >= ItemType_Equipment)
-			{	// Special case for shields which need to be considered as weapon.
-				itemId != CSI_SHIELD ? 
-					(g_szEquipAmmoRestr[baseItemIndexes[posType] + posItem] = '1') : 
-					(g_szWeapRestr[25] = '1');
-			}
-			else// Weapons
-			{	// +1 to skip knife at index 0.
-				g_szWeapRestr[baseItemIndexes[posType] + posItem + 1] = '1'; 
-			}
+			prepareRestrictedItemsToCvars(itemId, posType, posItem, g_szWeapRestr, g_szEquipAmmoRestr);
 		}
 	}
 

@@ -74,16 +74,17 @@ new g_menusNames[7][] =
 	"ammo"
 }
 
-new g_MenuTitle[7][] =
+new const MenuTitleNames[][] =
 {
 	"Handguns", 
 	"Shotguns", 
 	"Sub-Machine Guns", 
-	"Assault & Sniper Rifles", 
+	"Assault Rifles", 
+	"Sniper Rifles", 
 	"Machine Guns", 
 	"Equipment", 
 	"Ammunition"
-}
+};
 
 new g_menusSets[7][2] =
 {
@@ -399,7 +400,7 @@ switchCommand(id, action)
 				for (new i = g_menusSets[a][0]; i < c; ++i)
 					setWeapon(i, action)
 				
-				console_print(id, "%s %L %L", g_MenuTitle[a], id, (a < 5) ? "HAVE_BEEN" : "HAS_BEEN", id, action ? "RESTRICTED" : "UNRESTRICTED")
+				console_print(id, "%s %L %L", MenuTitleNames[a], id, (a < 5) ? "HAVE_BEEN" : "HAS_BEEN", id, action ? "RESTRICTED" : "UNRESTRICTED")
 				g_Modified = found = true
 			}
 			else if ((a = findAliasId(arg)) != -1)
@@ -548,96 +549,6 @@ public cmdRest(id, level, cid)
 	return PLUGIN_HANDLED
 }
 
-displayMenu(id, pos)
-{
-	if (pos < 0)
-		return
-
-	new menubody[512], start = pos * 7
-
-	if (start >= MAXMENUPOS)
-		start = pos = g_Position[id] = 0
-
-	new len = format(menubody, 511, "\y%L\R%d/5^n^n\w", id, "REST_WEAP", pos + 1)
-	new end = start + 7, keys = MENU_KEY_0|MENU_KEY_8, k = 0
-
-	if (end > MAXMENUPOS)
-		end = MAXMENUPOS
-
-	for (new a = start; a < end; ++a)
-	{
-		keys |= (1<<k)
-		len += format(menubody[len], 511 - len, g_MenuItem[a], ++k, g_WeaponNames[a], id, positionBlocked(a) ? "ON" : "OFF")
-	}
-
-	len += format(menubody[len], 511 - len, "^n8. %L \y\R%s^n\w", id, "SAVE_SET", g_Modified ? "*" : "")
-
-	if (end != MAXMENUPOS)
-	{
-		format(menubody[len], 511-len, "^n9. %L...^n0. %L", id, "MORE", id, pos ? "BACK" : "EXIT")
-		keys |= MENU_KEY_9
-	}
-	else
-		format(menubody[len], 511-len, "^n0. %L", id, pos ? "BACK" : "EXIT")
-
-	show_menu(id, keys, menubody, -1, "Restrict Weapons")
-}
-
-public actionMenu(id, key)
-{
-	switch (key)
-	{
-		case 7:
-		{
-			if (saveSettings(g_saveFile))
-			{
-				g_Modified = false
-				client_print(id, print_chat, "* %L", id, "CONF_SAV_SUC")
-			}
-			else
-				client_print(id, print_chat, "* %L", id, "CONF_SAV_FAIL")
-
-			displayMenu(id, g_Position[id])
-		}
-		case 8: displayMenu(id, ++g_Position[id])
-		case 9: displayMenu(id, --g_Position[id])
-		default:
-		{
-			setWeapon(g_Position[id] * 7 + key, 2)
-			g_Modified = true
-			displayMenu(id, g_Position[id])
-
-			new a = g_Position[id] * 7 + key
-			new sz[1]
-
-			if (a < 24)
-			{
-				sz[0] = g_szWeapRestr[a + 1]
-				g_szWeapRestr[a + 1] = (sz[0] == '0') ? '1' : '0'  // primary and secondary weapons
-			}
-			else if ((a >= 24) && (a < 31))
-			{
-				sz[0] = g_szEquipAmmoRestr[a - 24]
-				g_szEquipAmmoRestr[a - 24] = (sz[0] == '0') ? '1' : '0'  // equipments
-			}
-			else if (a == 31)
-			{
-				sz[0] = g_szWeapRestr[25]
-				g_szWeapRestr[25] = (sz[0] == '0') ? '1' : '0'  // shield
-			}
-			else if ((a > 31) && (a < 34))
-			{
-				sz[0] = g_szEquipAmmoRestr[a - 25]
-				g_szEquipAmmoRestr[a - 25] = (sz[0] == '0') ? '1' : '0'   // primary and secondary ammo
-			}
-			set_cvar_string("amx_restrweapons", g_szWeapRestr)
-			set_cvar_string("amx_restrequipammo", g_szEquipAmmoRestr)
-		}
-	}
-
-	return PLUGIN_HANDLED
-}
-
 public blockcommand(id)
 {
 	client_print(id, print_center, "%s", g_Restricted)
@@ -753,7 +664,7 @@ public plugin_init()
 	register_dictionary("restmenu.txt")
 	register_dictionary("common.txt")
 	register_clcmd("amx_restmenu", "cmdMenu", ADMIN_CFG, "- displays weapons restriction menu")
-	register_menucmd(register_menuid("Restrict Weapons"), 1023, "actionMenu")
+
 	register_concmd("amx_restrict", "cmdRest", ADMIN_CFG, "- displays help for weapons restriction")
 
 	register_cvar("amx_restrweapons", "00000000000000000000000000")

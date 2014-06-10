@@ -208,13 +208,14 @@
 #define CSI_AK47						CSW_AK47
 #define CSI_KNIFE						CSW_KNIFE
 #define CSI_P90							CSW_P90
-#define CSI_SHIELDGUN					CSW_SHIELDGUN
+#define CSI_SHIELDGUN					CSW_SHIELDGUN	 // The real CS value.
 #define CSI_VEST						CSW_VEST		 // Custom
 #define CSI_VESTHELM					CSW_VESTHELM	 // Custom
 #define CSI_DEFUSER						33				 // Custom
 #define CSI_NVGS						34				 // Custom
 #define CSI_PRIMAMMO					36				 // Custom
 #define CSI_SECAMMO						37				 // Custom
+#define CSI_SHIELD						38				 // Custom - The actual value passed by the forward, more convenient for plugins.
 
 #define BITS_PISTOLS					(1<<CSI_GLOCK18 | 1<<CSI_USP | 1<<CSI_P228 | 1<<CSI_DEAGLE | 1<<CSI_ELITE | 1<<CSI_FIVESEVEN)
 

@@ -130,7 +130,7 @@ DETOUR_DECL_STATIC1(C_ClientCommand, void, edict_t*, pEdict) // void ClientComma
 					/* Menu_BuyMachineGun    */ { 0, CSI_M249, 0, 0, 0, 0, 0, 0, 0 },
 					/* Menu_BuyShotgun       */ { 0, CSI_M3, CSI_XM1014, 0, 0, 0, 0, 0, 0 },
 					/* Menu_BuySubMachineGun */ { 0, CSI_TMP, CSI_MP5NAVY, CSI_UMP45, CSI_P90, 0, 0, 0, 0 },
-					/* Menu_BuyItem          */ { 0, CSI_VEST, CSI_VESTHELM, CSI_FLASHBANG, CSI_HEGRENADE, CSI_SMOKEGRENADE, CSI_NVGS, CSI_DEFUSER, CSI_SHIELDGUN }
+					/* Menu_BuyItem          */ { 0, CSI_VEST, CSI_VESTHELM, CSI_FLASHBANG, CSI_HEGRENADE, CSI_SMOKEGRENADE, CSI_NVGS, CSI_DEFUSER, CSI_SHIELD }
 				};
 
 				int menuId = *((int *)pEdict->pvPrivateData + OFFSET_MENU);
@@ -206,11 +206,11 @@ DETOUR_DECL_MEMBER1(GiveNamedItem, void, const char*, pszName) // void CBasePlay
 DETOUR_DECL_MEMBER1(GiveShield, void, bool, bRetire) // void CBasePlayer::GiveShield(bool bRetire)
 {
 	// Special case for shield. Game doesn't use GiveNamedItem() to give a shield.
-	if (CurrentItemId == CSI_SHIELDGUN)
+	if (CurrentItemId == CSI_SHIELD)
 	{
 		int client = PrivateToIndex(this);
 
-		if (MF_IsPlayerAlive(client) && MF_ExecuteForward(ForwardOnBuy, static_cast<cell>(client), CSI_SHIELDGUN) > 0)
+		if (MF_IsPlayerAlive(client) && MF_ExecuteForward(ForwardOnBuy, static_cast<cell>(client), CSI_SHIELD) > 0)
 		{
 			return;
 		}
@@ -313,7 +313,7 @@ void ToggleDetour_ClientCommands(bool enable)
 			{ "cv47"       , CSI_AK47       }, { "p90"        , CSI_P90          },
 			{ "c90"        , CSI_P90        }, { "vest"       , CSI_VEST         },
 			{ "vesthelm"   , CSI_VESTHELM   }, { "defuser"    , CSI_DEFUSER      },
-			{ "nvgs"       , CSI_NVGS       }, { "shield"     , CSI_SHIELDGUN    },
+			{ "nvgs"       , CSI_NVGS       }, { "shield"     , CSI_SHIELD       },
 			{ "buyammo1"   , CSI_PRIMAMMO   }, { "primammo"   , CSI_PRIMAMMO     },
 			{ "buyammo2"   , CSI_SECAMMO    }, { "secammo"    , CSI_SECAMMO      },
 			{ NULL         , 0 }

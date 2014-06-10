@@ -37,6 +37,7 @@
 
 #include <amxmodx>
 #include <amxmisc>
+#include <cstrike>
 
 #define MAXMENUPOS 34
 
@@ -47,6 +48,8 @@ new g_saveFile[64]
 new g_Restricted[] = "* This item is restricted *"
 new g_szWeapRestr[27] = "00000000000000000000000000"
 new g_szEquipAmmoRestr[10] = "000000000"
+
+new bool:BlockedItems[38]; // All items.
 
 new g_menuStrings[6][] =
 {
@@ -258,6 +261,42 @@ new g_Aliases[MAXMENUPOS][] =
 	"secammo"
 }
 
+new const ItemsNames[][][] = 
+{
+	{ "H&K USP .45 Tactical", "Glock18 Select Fire", "Desert Eagle .50AE", "SIG P228", "Dual Beretta 96G Elite", "FN Five-Seven", "", "" },
+	{ "Benelli M3 Super90", "Benelli XM1014", "", "", "", "", "", "" },
+	{ "H&K MP5-Navy", "Steyr Tactical Machine Pistol", "FN P90", "Ingram MAC-10", "H&K UMP45", "", "", "" },
+	{ "AK-47", "Galil", "Famas", "Sig SG-552 Commando", "Colt M4A1 Carbine", "Steyr Aug", "", "" },
+	{ "Steyr Scout", "AI Arctic Warfare/Magnum", "H&K G3/SG-1 Sniper Rifle", "Sig SG-550 Sniper", "", "", "", "" },
+	{ "FN M249 Para", "", "", "", "", "", "", "" },
+	{ "Kevlar Vest", "Kevlar Vest & Helmet", "Flashbang", "HE Grenade", "Smoke Grenade", "Defuse Kit", "NightVision Goggles", "Tactical Shield" },
+	{ "Primary weapon ammo", "Secondary weapon ammo", "", "", "", "", "", "" }
+};
+
+new const AliasNames[][][] = 
+{
+	{ "usp", "glock", "deagle", "p228", "elites", "fn57", "", "" },
+	{ "m3", "xm1014", "", "", "", "", "", "" },
+	{ "mp5", "tmp", "p90", "mac10", "ump45", "", "", "" },
+	{ "ak47", "galil", "famas", "sg552", "m4a1", "aug", "", "" },
+	{ "scout", "awp", "g3sg1", "sg550", "", "", "", "" },
+	{ "m249", "", "", "", "", "", "", "" },
+	{ "vest", "vesthelm", "flash", "hegren", "sgren", "defuser", "nvgs", "shield" },
+	{ "primammo", "secammo", "", "", "", "", "", "" }
+};
+
+new const SlotToItemId[][] = 
+{
+	{ CSI_USP, CSI_GLOCK18, CSI_DEAGLE, CSI_P228, CSI_ELITE, CSI_FIVESEVEN, -1, -1 },
+	{ CSI_M3, CSI_XM1014, -1, -1, -1, -1, -1, -1 },
+	{ CSI_MP5NAVY, CSI_TMP, CSI_P90, CSI_MAC10, CSI_UMP45, -1, -1, -1 },
+	{ CSI_AK47, CSI_GALIL, CSI_FAMAS, CSI_SG552, CSI_M4A1, CSI_AUG, -1, -1 },
+	{ CSI_SCOUT, CSI_AWP, CSI_G3SG1, CSI_SG550, -1, -1, -1, -1 },
+	{ CSI_M249, -1, -1, -1, -1, -1, -1, -1 },
+	{ CSI_VEST, CSI_VESTHELM, CSI_FLASHBANG, CSI_HEGRENADE, CSI_SMOKEGRENADE, CSI_DEFUSER, CSI_NVGS, CSI_SHIELDGUN },
+	{ CSI_PRIAMMO, CSI_SECAMMO, -1, -1, -1, -1, -1, -1 } 
+};
+
 setWeapon(a, action)
 {
 	new b, m = g_Keys[a][0] * 8
@@ -368,6 +407,13 @@ positionBlocked(a)
 	d += (g_Keys[a][2] == -1) ? 0 : g_blockPos[m + g_Keys[a][2] + 56]
 	
 	return d
+}
+
+bool:isItemBlocked(position, slot = -1)
+{
+	new itemId = (slot != -1) ? SlotToItemId[position][slot] : position;
+	
+	return BlockedItems[itemId];
 }
 
 public cmdRest(id, level, cid)
@@ -587,15 +633,18 @@ saveSettings(filename[])
 
 	new text[64]
 
-	for (new a = 0; a < MAXMENUPOS; ++a)
+	for (new i = 0, j; i < sizeof ItemsNames; ++i)
 	{
-		if (positionBlocked(a))
+		for (j = 0; j < sizeof ItemsNames[] && ItemsNames[i][j][0] != EOS; ++j)
 		{
-			format(text, 63, "%-16.15s ; %s", g_Aliases[a], g_WeaponNames[a])
-			write_file(filename, text)
+			if (isItemBlocked(i, j))
+			{
+				format(text, 63, "%-16.15s ; %s", AliasNames[i][j], ItemsNames[i][j]);
+				write_file(filename, text);
+			}
 		}
 	}
-
+	
 	return 1
 }
 
@@ -630,6 +679,17 @@ loadSettings(filename[])
 	set_cvar_string("amx_restrequipammo", g_szEquipAmmoRestr)
 
 	return 1
+}
+
+public CS_OnBuy(index, item)
+{
+	if (isItemBlocked(item))
+	{
+		client_print(index, print_center, "%s", g_Restricted);
+		return PLUGIN_HANDLED;
+	}
+	
+	return PLUGIN_CONTINUE;
 }
 
 public plugin_init()

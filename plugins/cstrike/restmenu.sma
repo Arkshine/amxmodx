@@ -39,11 +39,8 @@
 #include <amxmisc>
 #include <cstrike>
 
-#define MAXMENUPOS 34
-
 new g_Position[33]
 new g_Modified
-new g_blockPos[112]
 new g_saveFile[64]
 new g_Restricted[] = "* This item is restricted *"
 new g_szWeapRestr[27] = "00000000000000000000000000"
@@ -54,16 +51,6 @@ new const PluginName[] = "Restrict Weapons";
 new bool:BlockedItems[39]; // All items.
 new RestWeaponsCvarPointer;
 new RestEquipAmmoCvarPointer;
-
-new g_menuStrings[6][] =
-{
-	"BuyPistol",
-	"BuyShotgun",
-	"BuySubMachineGun",
-	"BuyRifle",
-	"BuyMachineGun",
-	"BuyItem"
-}
 
 new MenuAliasNames[][] =
 {
@@ -88,184 +75,6 @@ new const MenuTitleNames[][] =
 	"Equipment", 
 	"Ammunition"
 };
-
-new g_menusSets[7][2] =
-{
-	{0, 6}, {6, 8}, {8, 13}, {13, 23}, {23, 24}, {24, 32}, {32, 34}
-}
-
-new g_AliasBlockNum
-new g_AliasBlock[MAXMENUPOS]
-
-// First position is a position of menu (0 for ammo, 1 for pistols, 6 for equipment etc.)
-// Second is a key for TERRORIST (all is key are minus one, 1 is 0, 2 is 1 etc.)
-// Third is a key for CT
-// Position with -1 doesn't exist
-
-new g_Keys[MAXMENUPOS][3] =
-{
-	{1, 1, 1},	// H&K USP .45 Tactical
-	{1, 0, 0},	// Glock18 Select Fire
-	{1, 3, 3},	// Desert Eagle .50AE
-	{1, 2, 2},	// SIG P228
-	{1, 4, -1}, // Dual Beretta 96G Elite
-	{1, -1, 4}, // FN Five-Seven
-	{2, 0, 0},	// Benelli M3 Super90
-	{2, 1, 1},	// Benelli XM1014
-	{3, 1, 1},	// H&K MP5-Navy
-	{3, -1, 0}, // Steyr Tactical Machine Pistol
-	{3, 3, 3},	// FN P90
-	{3, 0, -1}, // Ingram MAC-10
-	{3, 2, 2},	// H&K UMP45
-	{4, 1, -1}, // AK-47
-	{4, 0, -1}, // Gali
-	{4, -1, 0}, // Famas
-	{4, 3, -1}, // Sig SG-552 Commando
-	{4, -1, 2}, // Colt M4A1 Carbine
-	{4, -1, 3}, // Steyr Aug
-	{4, 2, 1},	// Steyr Scout
-	{4, 4, 5},	// AI Arctic Warfare/Magnum
-	{4, 5, -1}, // H&K G3/SG-1 Sniper Rifle
-	{4, -1, 4}, // Sig SG-550 Sniper
-	{5, 0, 0},	// FN M249 Para
-	{6, 0, 0},	// Kevlar Vest
-	{6, 1, 1},	// Kevlar Vest & Helmet
-	{6, 2, 2},	// Flashbang
-	{6, 3, 3},	// HE Grenade
-	{6, 4, 4},	// Smoke Grenade
-	{6, -1, 6}, // Defuse Kit
-	{6, 5, 5},	// NightVision Goggles
-	{6, -1, 7},	// Tactical Shield
-	{0, 5, 5},	// Primary weapon ammo
-	{0, 6, 6}	// Secondary weapon ammo
-}
-
-new g_WeaponNames[MAXMENUPOS][] =
-{
-	"H&K USP .45 Tactical", 
-	"Glock18 Select Fire", 
-	"Desert Eagle .50AE", 
-	"SIG P228", 
-	"Dual Beretta 96G Elite", 
-	"FN Five-Seven", 
-	"Benelli M3 Super90", 
-	"Benelli XM1014", 
-	"H&K MP5-Navy", 
-	"Steyr Tactical Machine Pistol", 
-	"FN P90", 
-	"Ingram MAC-10", 
-	"H&K UMP45", 
-	"AK-47", 
-	"Gali", 
-	"Famas", 
-	"Sig SG-552 Commando", 
-	"Colt M4A1 Carbine", 
-	"Steyr Aug", 
-	"Steyr Scout", 
-	"AI Arctic Warfare/Magnum", 
-	"H&K G3/SG-1 Sniper Rifle", 
-	"Sig SG-550 Sniper", 
-	"FN M249 Para", 
-	"Kevlar Vest", 
-	"Kevlar Vest & Helmet", 
-	"Flashbang", 
-	"HE Grenade", 
-	"Smoke Grenade", 
-	"Defuse Kit", 
-	"NightVision Goggles", 
-	"Tactical Shield", 
-	"Primary weapon ammo", 
-	"Secondary weapon ammo"
-}
-
-new g_MenuItem[MAXMENUPOS][] =
-{
-	"\yHandguns^n\w^n%d. %s\y\R%L^n\w", 
-	"%d. %s\y\R%L^n\w", 
-	"%d. %s\y\R%L^n\w", 
-	"%d. %s\y\R%L^n\w", 
-	"%d. %s\y\R%L^n\w", 
-	"%d. %s\y\R%L^n\w^n", 
-
-	"\yShotguns^n\w^n%d. %s\y\R%L^n\w", 
-	"%d. %s\y\R%L^n\w^n", 
-
-	"\ySub-Machine Guns^n\w^n%d. %s\y\R%L^n\w", 
-	"%d. %s\y\R%L^n\w", 
-	"%d. %s\y\R%L^n\w", 
-	"%d. %s\y\R%L^n\w", 
-	"%d. %s\y\R%L^n\w^n", 
-
-	"\yAssault Rifles^n\w^n%d. %s\y\R%L^n\w", 
-	"%d. %s\y\R%L^n\w", 
-	"%d. %s\y\R%L^n\w", 
-	"%d. %s\y\R%L^n\w", 
-	"%d. %s\y\R%L^n\w", 
-	"%d. %s\y\R%L^n\w^n", 
-
-	"\ySniper Rifles^n\w^n%d. %s\y\R%L^n\w", 
-	"%d. %s\y\R%L^n\w", 
-	"%d. %s\y\R%L^n\w", 
-	"%d. %s\y\R%L^n\w^n", 
-
-	"\yMachine Guns^n\w^n%d. %s\y\R%L^n\w^n", 
-
-	"\yEquipment^n\w^n%d. %s\y\R%L^n\w", 
-	"%d. %s\y\R%L^n\w", 
-	"%d. %s\y\R%L^n\w", 
-	"%d. %s\y\R%L^n\w", 
-	"%d. %s\y\R%L^n\w", 
-	"%d. %s\y\R%L^n\w", 
-	"%d. %s\y\R%L^n\w", 
-	"%d. %s\y\R%L^n\w^n", 
-
-	"\yAmmunition^n\w^n%d. %s\y\R%L^n\w", 
-	"%d. %s\y\R%L^n\w"
-}
-
-new g_Aliases[MAXMENUPOS][] =
-{
-	"usp",		//Pistols
-	"glock", 
-	"deagle", 
-	"p228", 
-	"elites", 
-	"fn57", 
-
-	"m3",		//Shotguns
-	"xm1014", 
-
-	"mp5",		//SMG
-	"tmp", 
-	"p90", 
-	"mac10", 
-	"ump45", 
-
-	"ak47",		//Rifles
-	"galil", 
-	"famas", 
-	"sg552", 
-	"m4a1", 
-	"aug", 
-	"scout", 
-	"awp", 
-	"g3sg1", 
-	"sg550", 
-
-	"m249",		//Machine Gun
-
-	"vest",		//Equipment
-	"vesthelm", 
-	"flash", 
-	"hegren", 
-	"sgren", 
-	"defuser", 
-	"nvgs", 
-	"shield", 
-
-	"primammo", //Ammo
-	"secammo"
-}
 
 enum
 {
@@ -317,48 +126,6 @@ new const SlotToItemId[][] =
 	{ CSI_PRIAMMO, CSI_SECAMMO, -1, -1, -1, -1, -1, -1 } 
 };
 
-setWeapon(a, action)
-{
-	new b, m = g_Keys[a][0] * 8
-	
-	if (g_Keys[a][1] != -1)
-	{
-		b = m + g_Keys[a][1]
-		
-		if (action == 2)
-			g_blockPos[b] = 1 - g_blockPos[b]
-		else
-			g_blockPos[b] = action
-	}
-
-	if (g_Keys[a][2] != -1)
-	{
-		b = m + g_Keys[a][2] + 56
-		
-		if (action == 2)
-			g_blockPos[b] = 1 - g_blockPos[b]
-		else
-			g_blockPos[b] = action
-	}
-
-	for (new i = 0; i < g_AliasBlockNum; ++i)
-		if (g_AliasBlock[i] == a)
-		{
-			if (!action || action == 2)
-			{
-				--g_AliasBlockNum
-				
-				for (new j = i; j < g_AliasBlockNum; ++j)
-					g_AliasBlock[j] = g_AliasBlock[j + 1]
-			}
-			
-			return
-		}
-
-	if (action && g_AliasBlockNum < MAXMENUPOS)
-		g_AliasBlock[g_AliasBlockNum++] = a
-}
-
 findMenuId(const name[])
 {
 	for (new i = 0; i < sizeof MenuAliasNames ; ++i)
@@ -370,25 +137,6 @@ findMenuId(const name[])
 	}
 	
 	return -1
-}
-
-findAliasId(name[])
-{
-	for (new i = 0; i < MAXMENUPOS ; ++i)
-		if (equali(name, g_Aliases[i]))
-			return i
-	
-	return -1
-}
-
-positionBlocked(a)
-{
-	new m = g_Keys[a][0] * 8
-	new d = (g_Keys[a][1] == -1) ? 0 : g_blockPos[m + g_Keys[a][1]]
-	
-	d += (g_Keys[a][2] == -1) ? 0 : g_blockPos[m + g_Keys[a][2] + 56]
-	
-	return d
 }
 
 bool:isItemBlocked(position, slot = -1)

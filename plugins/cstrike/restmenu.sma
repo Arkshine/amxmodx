@@ -52,6 +52,8 @@ new g_szEquipAmmoRestr[10] = "000000000"
 new const PluginName[] = "Restrict Weapons";
 
 new bool:BlockedItems[39]; // All items.
+new RestWeaponsCvarPointer;
+new RestEquipAmmoCvarPointer;
 
 new g_menuStrings[6][] =
 {
@@ -677,8 +679,8 @@ public ActionMenu(id, menu, item)
 			BlockedItems[itemId] = !BlockedItems[itemId];
 			
 			prepareRestrictedItemsToCvars(itemId, position - 1, item, g_szWeapRestr, g_szEquipAmmoRestr, .toggleState = true);
-			set_cvar_string("amx_restrweapons", g_szWeapRestr);
-			set_cvar_string("amx_restrequipammo", g_szEquipAmmoRestr);
+			set_pcvar_string(RestWeaponsCvarPointer, g_szWeapRestr);
+			set_pcvar_string(RestEquipAmmoCvarPointer, g_szEquipAmmoRestr);
 	
 			displayMenu(id, position);
 		}
@@ -770,8 +772,8 @@ bool:loadSettings(const filename[])
 		}
 	}
 
-	set_cvar_string("amx_restrweapons", g_szWeapRestr);
-	set_cvar_string("amx_restrequipammo", g_szEquipAmmoRestr);
+	set_pcvar_string(RestWeaponsCvarPointer, g_szWeapRestr);
+	set_pcvar_string(RestEquipAmmoCvarPointer, g_szEquipAmmoRestr);
 
 	return true;
 }
@@ -796,8 +798,8 @@ public plugin_init()
 
 	register_concmd("amx_restrict", "ConsoleCommand_WeaponRestriction", ADMIN_CFG, "- displays help for weapons restriction")
 
-	register_cvar("amx_restrweapons", "00000000000000000000000000")
-	register_cvar("amx_restrequipammo", "000000000")
+	RestWeaponsCvarPointer = register_cvar("amx_restrweapons", "00000000000000000000000000")
+	RestEquipAmmoCvarPointer = register_cvar("amx_restrequipammo", "000000000")
 	
 	new configsDir[64];
 	get_configsdir(configsDir, 63);

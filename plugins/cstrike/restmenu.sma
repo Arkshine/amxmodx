@@ -54,7 +54,6 @@ new RestWeaponsCvarPointer;
 new RestEquipAmmoCvarPointer;
 
 new bool:BlockedItems[39]; // All CSI_* items.
-new const RestrictedSentence[] = "* This item is restricted *";
 
 enum
 {
@@ -84,47 +83,47 @@ new const MenuAliasNames[][] =
 
 new const MenuTitleNames[][] =
 {
-	"Handguns",
-	"Shotguns",
-	"Sub-Machine Guns",
-	"Assault Rifles",
-	"Sniper Rifles",
-	"Machine Guns",
-	"Equipment",
-	"Ammunition"
+	"MENU_TITLE_HANDGUNS",
+	"MENU_TITLE_SHOTGUNS",
+	"MENU_TITLE_SUBMACHINES",
+	"MENU_TITLE_RIFLES",
+	"MENU_TITLE_SNIPERS",
+	"MENU_TITLE_MACHINE",
+	"MENU_TITLE_EQUIPMENT",
+	"MENU_TITLE_AMMUNITION"
 };
 
 new const ItemsNames[][][] =
 {
-	{ "H&K USP .45 Tactical", "Glock18 Select Fire", "Desert Eagle .50AE", "SIG P228", "Dual Beretta 96G Elite", "FN Five-Seven", "", "" },
-	{ "Benelli M3 Super90", "Benelli XM1014", "", "", "", "", "", "" },
-	{ "H&K MP5-Navy", "Steyr Tactical Machine Pistol", "FN P90", "Ingram MAC-10", "H&K UMP45", "", "", "" },
-	{ "AK-47", "Sig SG-552 Commando", "Colt M4A1 Carbine", "Galil", "Famas", "Steyr Aug", "", "" },
-	{ "Steyr Scout", "AI Arctic Warfare/Magnum", "H&K G3/SG-1 Sniper Rifle", "Sig SG-550 Sniper", "", "", "", "" },
-	{ "FN M249 Para", "", "", "", "", "", "", "" },
-	{ "Kevlar Vest", "Kevlar Vest & Helmet", "Flashbang", "HE Grenade", "Smoke Grenade", "Defuse Kit", "NightVision Goggles", "Tactical Shield" },
-	{ "Primary weapon ammo", "Secondary weapon ammo", "", "", "", "", "", "" }
+	{ "MENU_ITEM_USP"  , "MENU_ITEM_GLOCK18", "MENU_ITEM_DEAGLE", "MENU_ITEM_P228", "MENU_ITEM_ELITE", "MENU_ITEM_FIVESEVEN", "", "" },
+	{ "MENU_ITEM_M3"   , "MENU_ITEM_XM1014" , "", "", "", "", "", "" },
+	{ "MENU_ITEM_MP5N" , "MENU_ITEM_TMP"    , "MENU_ITEM_P90"   , "MENU_ITEM_MAC10", "MENU_ITEM_UMP45", "", "", "" },
+	{ "MENU_ITEM_AK47" , "MENU_ITEM_SG552"  , "MENU_ITEM_M4A1"  , "MENU_ITEM_GALIL", "MENU_ITEM_FAMAS", "MENU_ITEM_AUG", "", "" },
+	{ "MENU_ITEM_SCOUT", "MENU_ITEM_AWP"    , "MENU_ITEM_G3SG1" , "MENU_ITEM_SG550", "", "", "", "" },
+	{ "MENU_ITEM_M249" , "", "", "", "", "", "", "" },
+	{ "MENU_ITEM_VEST" , "MENU_ITEM_VESTHELM", "MENU_ITEM_FLASHBANG", "MENU_ITEM_HEGRENADE", "MENU_ITEM_SMOKEGREN", "MENU_ITEM_DEFUSEKIT", "MENU_ITEM_NVGS", "MENU_ITEM_SHIELD" },
+	{ "MENU_ITEM_PRIAMMO", "MENU_ITEM_SECAMMO", "", "", "", "", "", "" }
 };
 
 new const AliasNames[][][] =
 {
-	{ "usp", "glock", "deagle", "p228", "elites", "fn57", "", "" },
-	{ "m3", "xm1014", "", "", "", "", "", "" },
-	{ "mp5", "tmp", "p90", "mac10", "ump45", "", "", "" },
-	{ "ak47", "sg552", "m4a1", "galil", "famas", "aug", "", "" },
-	{ "scout", "awp", "g3sg1", "sg550", "", "", "", "" },
-	{ "m249", "", "", "", "", "", "", "" },
-	{ "vest", "vesthelm", "flash", "hegren", "sgren", "defuser", "nvgs", "shield" },
+	{ "usp" , "glock" , "deagle", "p228", "elites", "fn57", "", "" },
+	{ "m3"  , "xm1014", "", "", "", "", "", "" },
+	{ "mp5" , "tmp"   , "p90"  , "mac10", "ump45", "", "", "" },
+	{ "ak47", "sg552" , "m4a1" , "galil", "famas", "aug", "", "" },
+	{ "scout", "awp"  , "g3sg1", "sg550", "", "", "", "" },
+	{ "m249" , "", "", "", "", "", "", "" },
+	{ "vest" , "vesthelm", "flash", "hegren", "sgren", "defuser", "nvgs", "shield" },
 	{ "primammo", "secammo", "", "", "", "", "", "" }
 };
 
 new const SlotToItemId[][] =
 {
 	{ CSI_USP, CSI_GLOCK18, CSI_DEAGLE, CSI_P228, CSI_ELITE, CSI_FIVESEVEN, -1, -1 },
-	{ CSI_M3, CSI_XM1014, -1, -1, -1, -1, -1, -1 },
+	{ CSI_M3 , CSI_XM1014, -1, -1, -1, -1, -1, -1 },
 	{ CSI_MP5NAVY, CSI_TMP, CSI_P90, CSI_MAC10, CSI_UMP45, -1, -1, -1 },
-	{ CSI_AK47, CSI_SG552, CSI_M4A1, CSI_GALIL, CSI_FAMAS, CSI_AUG, -1, -1 },
-	{ CSI_SCOUT, CSI_AWP, CSI_G3SG1, CSI_SG550, -1, -1, -1, -1 },
+	{ CSI_AK47 , CSI_SG552, CSI_M4A1 , CSI_GALIL, CSI_FAMAS, CSI_AUG, -1, -1 },
+	{ CSI_SCOUT, CSI_AWP  , CSI_G3SG1, CSI_SG550, -1, -1, -1, -1 },
 	{ CSI_M249, -1, -1, -1, -1, -1, -1, -1 },
 	{ CSI_VEST, CSI_VESTHELM, CSI_FLASHBANG, CSI_HEGRENADE, CSI_SMOKEGRENADE, CSI_DEFUSER, CSI_NVGS, CSI_SHIELD },
 	{ CSI_PRIAMMO, CSI_SECAMMO, -1, -1, -1, -1, -1, -1 }
@@ -137,8 +136,8 @@ public plugin_init()
 	register_dictionary("restmenu.txt");
 	register_dictionary("common.txt");
 
-	register_clcmd("amx_restmenu", "ClientCommand_Menu", ADMIN_CFG, "- displays weapons restriction menu");
-	register_concmd("amx_restrict", "ConsoleCommand_WeaponRestriction", ADMIN_CFG, "- displays help for weapons restriction");
+	register_clcmd("amx_restmenu", "ClientCommand_Menu", ADMIN_CFG, _T("REG_CMD_MENU"));
+	register_concmd("amx_restrict", "ConsoleCommand_WeaponRestriction", ADMIN_CFG, _T("REG_CMD_REST"));
 
 	RestWeaponsCvarPointer = register_cvar("amx_restrweapons", "00000000000000000000000000");
 	RestEquipAmmoCvarPointer = register_cvar("amx_restrequipammo", "000000000");
@@ -159,7 +158,7 @@ public CS_OnBuy(index, item)
 {
 	if (isItemBlocked(item))
 	{
-		client_print(index, print_center, "%s", RestrictedSentence);
+		client_print(index, print_center, "%L", index, "RESTRICTED_ITEM");
 		return PLUGIN_HANDLED;
 	}
 
@@ -226,7 +225,7 @@ public ConsoleCommand_WeaponRestriction(id, level, cid)
 				{
 					BlockedItems[a] = status;
 
-					console_print(id, "%s %L %L", ItemsNames[a][j], id, "HAS_BEEN", id, status ? "RESTRICTED" : "UNRESTRICTED");
+					console_print(id, "%L %L %L", id, ItemsNames[a][j], id, "HAS_BEEN", id, status ? "RESTRICTED" : "UNRESTRICTED");
 					ModifiedState = found = true;
 				}
 			}
@@ -243,7 +242,7 @@ public ConsoleCommand_WeaponRestriction(id, level, cid)
 
 		if (read_argv(2, argument, charsmax(argument)))
 		{
-			item = clamp(str_to_num(argument) - 1, 0, sizeof ItemsNames);
+			item = clamp(str_to_num(argument) - 1, 0, charsmax(ItemsNames));
 		}
 
 		console_print(id, "^n----- %L: -----^n", id, "WEAP_RES");
@@ -252,7 +251,7 @@ public ConsoleCommand_WeaponRestriction(id, level, cid)
 		{
 			for (i = 0; i < sizeof MenuTitleNames; ++i)
 			{
-				console_print(id, "%3d: %-32.31s", i + 1, MenuTitleNames[i]);
+				console_print(id, "%3d: %-32.31s", i + 1, _T(MenuTitleNames[i], id));
 			}
 		}
 		else // Items list.
@@ -268,7 +267,7 @@ public ConsoleCommand_WeaponRestriction(id, level, cid)
 			for (i = 0; i < sizeof ItemsNames[] && ItemsNames[item][i][0] != EOS; ++i)
 			{
 				LookupLangKey(langOnOff, charsmax(langOnOff), isItemBlocked(item, i) ? "ON" : "OFF", id);
-				console_print(id, "  %-32.31s   %-10.9s   %-9.8s", ItemsNames[item][i], AliasNames[item][i], langOnOff);
+				console_print(id, "  %-32.31s   %-10.9s   %-9.8s", _T(ItemsNames[item][i], id), AliasNames[item][i], langOnOff);
 			}
 		}
 	}
@@ -338,18 +337,18 @@ displayMenu(id, itemType)
 	{
 		for (i = 0; i < sizeof MenuTitleNames; ++i)
 		{
-			menu_additem(menu, MenuTitleNames[i]);
+			menu_additem(menu, _T(MenuTitleNames[i], id));
 		}
 	}
 	else // Sub-menus
 	{
 		// Add item type title to main title.
-		format(menuTitle, charsmax(menuTitle), "%s > \d%s", menuTitle, MenuTitleNames[itemType]);
+		format(menuTitle, charsmax(menuTitle), "%s > \d%L", menuTitle, id, MenuTitleNames[itemType]);
 		menu_setprop(menu, MPROP_TITLE, menuTitle);
 
 		for (i = 0; i < 8 && ItemsNames[itemType][i][0] != EOS; ++i)
 		{
-			formatex(menuBody, charsmax(menuBody), "%s\y\R%L", ItemsNames[itemType][i], id, isItemBlocked(itemType, i) ? "ON" : "OFF");
+			formatex(menuBody, charsmax(menuBody), "%L\y\R%L", id, ItemsNames[itemType][i], id, isItemBlocked(itemType, i) ? "ON" : "OFF");
 			menu_additem(menu, menuBody);
 		}
 	}
@@ -361,8 +360,7 @@ displayMenu(id, itemType)
 	formatex(menuBody, charsmax(menuBody), "%L \y\R%s", id, "SAVE_SET", ModifiedState ? "*" : "");
 	menu_additem(menu, menuBody);
 
-	formatex(menuBody, charsmax(menuBody), "%L", id, itemType < 0 ? "EXIT" : "BACK");
-	menu_setprop(menu, MPROP_EXITNAME, menuBody);
+	menu_setprop(menu, MPROP_EXITNAME, _T(itemType < 0 ? "EXIT" : "BACK", id));
 	menu_setprop(menu, MPROP_PERPAGE, 0);        // Disable pagination.
 	menu_setprop(menu, MPROP_EXIT, MEXIT_FORCE); // Force an EXIT item since pagination is disabled.
 
@@ -501,7 +499,7 @@ bool:saveSettings(const filename[])
 		return false;
 	}
 
-	fprintf(fp, "; Generated by %s Plugin. Do not modify!^n; value name^n", PluginName);
+	fprintf(fp, "%L", LANG_SERVER, "CONFIG_FILE_HEADER", PluginName);
 
 	for (new i = 0, j; i < sizeof ItemsNames; ++i)
 	{
@@ -509,7 +507,7 @@ bool:saveSettings(const filename[])
 		{
 			if (isItemBlocked(i, j))
 			{
-				fprintf(fp, "%-16.15s ; %s^n", AliasNames[i][j], ItemsNames[i][j]);
+				fprintf(fp, "%-16.15s ; %L^n", AliasNames[i][j], LANG_SERVER, ItemsNames[i][j]);
 			}
 		}
 	}
@@ -560,8 +558,18 @@ bool:loadSettings(const filename[])
 	return true;
 }
 
+// Is it somehow used by others plugins?
 public blockcommand(id)
 {
-	client_print(id, print_center, "%s", RestrictedSentence);
+	client_print(id, print_center, "%L", id, "RESTRICTED_ITEM");
 	return PLUGIN_HANDLED;
+}
+
+// Inline translation for readability sake.
+_T(const key[], lang = LANG_SERVER)
+{
+	new buffer[256];
+	LookupLangKey(buffer, charsmax(buffer), key, lang);
+	
+	return buffer;
 }

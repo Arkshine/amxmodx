@@ -31,10 +31,6 @@
  *  you do not wish to do so, delete this exception statement from your
  *  version.
  */
-
-// Uncomment if you want to have seperate settings for each map
-//#define MAPSETTINGS
-
 #include <amxmodx>
 #include <amxmisc>
 #include <cstrike>
@@ -50,6 +46,7 @@ new ConfigFileName[64];
 new WeaponRestrCvar[] = "00000000000000000000000000";
 new EquipAmmoRestrCvar[] = "000000000";
 
+new RestrSettingsCvarPointer;
 new RestWeaponsCvarPointer;
 new RestEquipAmmoCvarPointer;
 
@@ -139,18 +136,33 @@ public plugin_init()
 	register_clcmd("amx_restmenu", "ClientCommand_Menu", ADMIN_CFG, _T("REG_CMD_MENU"));
 	register_concmd("amx_restrict", "ConsoleCommand_WeaponRestriction", ADMIN_CFG, _T("REG_CMD_REST"));
 
-	RestWeaponsCvarPointer = register_cvar("amx_restrweapons", "00000000000000000000000000");
+	RestrSettingsCvarPointer = register_cvar("amx_restrsettings" , "0");
+	RestWeaponsCvarPointer   = register_cvar("amx_restrweapons"  , "00000000000000000000000000");
 	RestEquipAmmoCvarPointer = register_cvar("amx_restrequipammo", "000000000");
+}
 
+public plugin_cfg()
+{
+	// Let's delay right after config files in maps/ are executed.
+	set_task(6.2, "Task_DelayConfig");
+}
+
+public DelayConfig()
+{
 	new configsDir[64];
 	get_configsdir(configsDir, charsmax(configsDir));
-#if defined MAPSETTINGS
-	new mapname[32]
-	get_mapname(mapname, charsmax(mapname));
-	formatex(ConfigFileName, charsmax(ConfigFileName), "%s/weaprest_%s.ini", configsDir, mapname);
-#else
-	formatex(ConfigFileName, charsmax(ConfigFileName), "%s/weaprest.ini", configsDir);
-#endif
+	
+	if (get_pcvar_num(RestrSettingsCvarPointer) > 0)
+	{
+		new mapname[32]
+		get_mapname(mapname, charsmax(mapname));
+		formatex(ConfigFileName, charsmax(ConfigFileName), "%s/weaprest_%s.ini", configsDir, mapname);
+	}
+	else
+	{
+		formatex(ConfigFileName, charsmax(ConfigFileName), "%s/weaprest.ini", configsDir);
+	}
+	
 	loadSettings(ConfigFileName);
 }
 

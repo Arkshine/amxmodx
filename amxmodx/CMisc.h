@@ -12,6 +12,8 @@
 
 #include "CList.h"
 #include "sh_list.h"
+#include <am-hashset.h>
+#include <sm_stringhashmap.h>
 
 // *****************************************************
 // class CPlayer
@@ -332,4 +334,53 @@ public:
 		return *this;
 	}
 };
+
+// *****************************************************
+// class TemporaryExploitFix
+// ****************************************************
+
+#undef CMD_ARGV
+#undef CMD_ARGS
+
+extern const char* CMD_ARGV(int i);
+extern const char* CMD_ARGS();
+
+class TemporaryExploitFix
+{
+	public:
+
+		TemporaryExploitFix();
+		~TemporaryExploitFix();
+
+	public:
+
+		void AddTitlesFromFile(const char* file = "titles.txt");
+
+		bool ContainsTitle(const char* aKey);
+		bool InsertTitle(const char* aKey);
+
+		size_t FilterFormatAndAmpersand(char* string);
+		size_t FilterFormat(char* string);
+		size_t FilterLocalizedWord(char* string);
+
+		const char* OnCmdArgv(int index);
+		const char* OnCmdArgs();
+		bool SendFilteredCmd();
+		void ClearCachedArgs();
+
+		void OnClientUserInfoChanged(edict_t* pEntity, char* infobuffer);
+
+	private:
+
+		typedef ke::HashSet<ke::AString, detail::StringHashMapPolicy> StringHashSet;
+		typedef detail::CharsAndLength CharsAndLength;
+
+		StringHashSet m_GameTitles;
+
+		char m_ArgvBuffer[256][2];
+		char m_ArgsBuffer[256];
+		bool m_CheckArg;
+		bool m_SupercedeCommand;
+};
+
 #endif //CMISC_H

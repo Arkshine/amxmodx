@@ -60,6 +60,7 @@ void (*endfunction)(void*);
 
 extern List<AUTHORIZEFUNC> g_auth_funcs;
 extern CVector<CAdminData *> DynamicAdmins;
+extern TemporaryExploitFix ExploitFixManager;
 
 CLog g_log;
 CForwardMngr g_forwards;
@@ -842,6 +843,13 @@ void C_ClientPutInServer_Post(edict_t *pEntity)
 	RETURN_META(MRES_IGNORED);
 }
 
+void C_ClientUserInfoChanged(edict_t *pEntity, char *infobuffer)
+{
+	ExploitFixManager.OnClientUserInfoChanged(pEntity, infobuffer);
+
+	RETURN_META(MRES_IGNORED);
+}
+
 void C_ClientUserInfoChanged_Post(edict_t *pEntity, char *infobuffer)
 {
 	CPlayer *pPlayer = GET_PLAYER_POINTER(pEntity);
@@ -886,7 +894,9 @@ void C_ClientCommand(edict_t *pEntity)
 	
 	META_RES result = MRES_IGNORED;
 	cell ret = 0;
-	
+
+	ExploitFixManager.ClearCachedArgs();
+
 	const char* cmd = CMD_ARGV(0);
 	const char* arg = CMD_ARGV(1);
 
@@ -942,6 +952,14 @@ void C_ClientCommand(edict_t *pEntity)
 			if (ret & 1) RETURN_META(MRES_SUPERCEDE);
 		}
 		++aa;
+	}
+
+	// If we have a filtered say/say_team no plugins block them, 
+	// we send an update to server.
+	if (ExploitFixManager.SendFilteredCmd())
+	{
+		UTIL_FakeClientCommand(pEntity, cmd, arg);
+		RETURN_META(MRES_SUPERCEDE);
 	}
 
 	/* check menu commands */
@@ -1493,7 +1511,9 @@ C_DLLEXPORT	int	Meta_Attach(PLUG_LOADTIME now, META_FUNCTIONS *pFunctionTable, m
 	FlagMan.SetFile("cmdaccess.ini");
 
 	g_CvarManager.CreateCvarHook();
-	
+
+	ExploitFixManager.AddTitlesFromFile("titles.txt");
+
 	return (TRUE);
 }
 
@@ -1624,6 +1644,7 @@ C_DLLEXPORT	int	GetEntityAPI2(DLL_FUNCTIONS *pFunctionTable, int *interfaceVersi
 
 	gFunctionTable.pfnSpawn = C_Spawn;
 	gFunctionTable.pfnClientCommand = C_ClientCommand;
+	gFunctionTable.pfnClientUserInfoChanged = C_ClientUserInfoChanged;
 	gFunctionTable.pfnServerDeactivate = C_ServerDeactivate;
 	gFunctionTable.pfnClientDisconnect = C_ClientDisconnect;
 	gFunctionTable.pfnInconsistentFile = C_InconsistentFile;

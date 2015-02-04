@@ -7,6 +7,9 @@
 // Additional exceptions apply. For full license details, see LICENSE.txt or visit:
 //     https://alliedmods.net/amxmodx-license
 
+#ifndef CFILE_H
+#define CFILE_H
+
 #include <stdio.h>
 #include "CString.h"
 
@@ -35,3 +38,5 @@ public:
 	
 	File& skipWs();
 };
+
+#endif //CFILE_H

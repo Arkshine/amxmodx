@@ -567,6 +567,8 @@ bool:loadSettings(const filename[])
 	set_pcvar_string(RestWeaponsCvarPointer, WeaponRestrCvar);
 	set_pcvar_string(RestEquipAmmoCvarPointer, EquipAmmoRestrCvar);
 
+	fclose(fp);
+
 	return true;
 }
 

@@ -755,8 +755,7 @@ bool ConvertModuleName(const char *pathString, char *path)
 		return false;
 
 	/* run to filename instead of dir */
-	char *ptr = tmpname;
-	ptr = tmpname + len - 1;
+	char *ptr = tmpname + len - 1;
 	while (ptr >= tmpname && *ptr != PATH_SEP_CHAR)
 		ptr--;
 	if (ptr >= tmpname)

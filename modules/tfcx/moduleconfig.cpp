@@ -148,7 +148,7 @@ void ServerDeactivate() {
 
 	// clear custom weapons info
 	for ( i=TFCMAX_WEAPONS-TFCMAX_CUSTOMWPNS;i<TFCMAX_WEAPONS;i++)
-		weaponData[i].ammoSlot = false;
+		weaponData[i].ammoSlot = 0;
 	
 	g_grenades.clear();
 

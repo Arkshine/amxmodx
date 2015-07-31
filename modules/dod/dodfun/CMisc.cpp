@@ -70,7 +70,7 @@ void CObjective::SetKeyValue( int index, char *keyname, char *value ){
 	pkvd.szClassName = (char *)STRING(obj[index].pEdict->v.classname);
 	pkvd.szKeyName = keyname; // type
 	pkvd.szValue = value;
-	pkvd.fHandled = false;
+	pkvd.fHandled = FALSE;
 
 	MDLL_KeyValue(obj[index].pEdict, &pkvd);
 

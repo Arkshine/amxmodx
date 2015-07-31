@@ -505,7 +505,7 @@ static cell AMX_NATIVE_CALL dod_set_model(AMX *amx, cell *params) // player,mode
 	int length;
 	pPlayer->initModel((char*)STRING(ALLOC_STRING(MF_GetAmxString(amx, params[2], 1, &length))));
 
-	return true;
+	return 1;
 }
 
 static cell AMX_NATIVE_CALL dod_set_body(AMX *amx, cell *params) // player,bodynumber
@@ -522,7 +522,7 @@ static cell AMX_NATIVE_CALL dod_set_body(AMX *amx, cell *params) // player,bodyn
 
 	pPlayer->setBody(params[2]);
 
-	return true;
+	return 1;
 }
 
 static cell AMX_NATIVE_CALL dod_clear_model(AMX *amx, cell *params) // player
@@ -532,11 +532,11 @@ static cell AMX_NATIVE_CALL dod_clear_model(AMX *amx, cell *params) // player
 
 	CPlayer* pPlayer = GET_PLAYER_POINTER_I(index);
 	if(!pPlayer->ingame)
-		return false;
+		return 0;
 
 	pPlayer->clearModel();
 
-	return true;
+	return 1;
 }
 
 /* 

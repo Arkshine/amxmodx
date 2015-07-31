@@ -92,12 +92,14 @@ void HamCommand(void)
 		int count = 0;
 		for (int i=0; i<HAM_LAST_ENTRY_DONT_USE_ME_LOL; i++)
 		{
-			for (size_t j = 0; j < hooks[i].length(); ++i)
+			for (size_t j = 0; j < hooks[i].length(); ++j)
 			{
-				HookCount++;
-				ForwardCount += hooks[i].at(j)->pre.length() + hooks[i].at(j)->post.length();
+				auto hook = hooks[i].at(j);
 
-				print_srvconsole("%-24s | %-27s | %10d | %10d\n", hooklist[i].name, hooks[i].at(j)->ent, hooks[i].at(j)->pre.length(), hooks[i].at(j)->post.length());
+				HookCount++;
+				ForwardCount += hook->pre.length() + hook->post.length();
+
+				print_srvconsole("%-24s | %-27s | %10d | %10d\n", hooklist[i].name, hook->ent, hook->pre.length(), hook->post.length());
 				if (count >= 5)
 				{
 					print_srvconsole("--------------------------------------------------------------------------------\n");

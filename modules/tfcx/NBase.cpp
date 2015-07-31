@@ -455,7 +455,7 @@ static cell AMX_NATIVE_CALL TFC_IsTeamAlly(AMX *amx, cell *params)
 		mp_teamplay=CVAR_GET_POINTER("mp_teamplay");
 	}
 
-	if (mp_teamplay && mp_teamplay->value != 0.0)
+	if (mp_teamplay && mp_teamplay->value <= 0.0)
 	{
 		return 0;
 	}

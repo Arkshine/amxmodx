@@ -201,7 +201,7 @@ static cell AMX_NATIVE_CALL console_print(AMX *amx, cell *params) /* 2 param */
 		if (len > 254)
 		{
 			len = 254;
-			if ((message[len - 1] & 1 << 7))
+			if (message[len - 1] & 1 << 7)
 			{
 				len -= UTIL_CheckValidChar(message + len - 1); // Don't truncate a multi-byte character
 			}
@@ -220,7 +220,7 @@ static cell AMX_NATIVE_CALL console_print(AMX *amx, cell *params) /* 2 param */
 			if (len > 126)	// Client console truncates after byte 127. (126 + \n = 127)
 			{
 				len = 126;
-				if ((message[len - 1] & 1 << 7))
+				if (message[len - 1] & 1 << 7)
 				{
 					len -= UTIL_CheckValidChar(message + len - 1); // Don't truncate a multi-byte character
 				}
@@ -254,10 +254,10 @@ static cell AMX_NATIVE_CALL client_print(AMX *amx, cell *params) /* 3 param */
 				msg = format_amxstring(amx, params, 3, len);
 
 				// params[2]: print_notify = 1, print_console = 2, print_chat = 3, print_center = 4
-				if (((params[2] == 1) || (params[2] == 2)) && (len > 126))	// Client console truncates after byte 127. (126 + \n = 127)
+				if ((params[2] == 1 || params[2] == 2) && len > 126)	// Client console truncates after byte 127. (126 + \n = 127)
 				{
 					len = 126;
-					if ((msg[len - 1] & 1 << 7))
+					if (msg[len - 1] & 1 << 7)
 					{
 						len -= UTIL_CheckValidChar(msg + len - 1); // Don't truncate a multi-byte character
 					}
@@ -288,10 +288,10 @@ static cell AMX_NATIVE_CALL client_print(AMX *amx, cell *params) /* 3 param */
 			msg = format_amxstring(amx, params, 3, len);
 
 			// params[2]: print_notify = 1, print_console = 2, print_chat = 3, print_center = 4
-			if (((params[2] == 1) || (params[2] == 2)) && (len > 126))	// Client console truncates after byte 127. (126 + \n = 127)
+			if ((params[2] == 1 || params[2] == 2) && len > 126)	// Client console truncates after byte 127. (126 + \n = 127)
 			{
 				len = 126;
-				if ((msg[len - 1] & 1 << 7))
+				if (msg[len - 1] & 1 << 7)
 				{
 					len -= UTIL_CheckValidChar(msg + len - 1); // Don't truncate a multi-byte character
 				}
@@ -342,7 +342,7 @@ static cell AMX_NATIVE_CALL client_print_color(AMX *amx, cell *params) /* 3 para
 				if (len > 190)	// Server crashes after byte 190. (190 + \n = 191)
 				{
 					len = 190;
-					if ((msg[len - 1] & 1 << 7))
+					if (msg[len - 1] & 1 << 7)
 					{
 						len -= UTIL_CheckValidChar(msg + len - 1); // Don't truncate a multi-byte character
 					}
@@ -374,7 +374,7 @@ static cell AMX_NATIVE_CALL client_print_color(AMX *amx, cell *params) /* 3 para
 			if (len > 190)	// Server crashes after byte 190. (190 + \n = 191)
 			{
 				len = 190;
-				if ((msg[len - 1] & 1 << 7))
+				if (msg[len - 1] & 1 << 7)
 				{
 					len -= UTIL_CheckValidChar(msg + len - 1); // Don't truncate a multi-byte character
 				}
@@ -1423,17 +1423,17 @@ static cell AMX_NATIVE_CALL get_plugin(AMX *amx, cell *params) /* 11 param */
 		set_amxstring(amx, params[8], a->getAuthor(), params[9]);
 		set_amxstring(amx, params[10], a->getStatus(), params[11]);
 		
-		return a->getId();
-	}
-
-	if (params[0] / sizeof(cell) >= 12)
-	{
-		cell *jit_info = get_amxaddr(amx, params[12]);
+		if (params[0] / sizeof(cell) >= 12)
+		{
+			cell *jit_info = get_amxaddr(amx, params[12]);
 #if defined AMD64 || !defined JIT
-		*jit_info = 0;
+			*jit_info = 0;
 #else
-		*jit_info = a->isDebug() ? 0 : 1;
+			*jit_info = a->isDebug() ? 0 : 1;
 #endif
+		}
+
+		return a->getId();
 	}
 	
 	return -1;
@@ -2032,7 +2032,7 @@ static cell AMX_NATIVE_CALL get_timeleft(AMX *amx, cell *params)
 {
 	float flCvarTimeLimit = mp_timelimit->value;
 
-	if (flCvarTimeLimit)
+	if (flCvarTimeLimit > 0)
 	{
 		int iReturn = (int)((g_game_timeleft + flCvarTimeLimit * 60.0) - gpGlobals->time);
 		return (iReturn < 0) ? 0 : iReturn;
@@ -3913,7 +3913,7 @@ static cell AMX_NATIVE_CALL module_exists(AMX *amx, cell *params)
 	if (!FindLibrary(module, LibType_Library))
 		return FindLibrary(module, LibType_Class);
 
-	return true;
+	return 1;
 }
 
 static cell AMX_NATIVE_CALL LibraryExists(AMX *amx, cell *params)

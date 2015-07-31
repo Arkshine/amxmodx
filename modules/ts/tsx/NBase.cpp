@@ -186,7 +186,7 @@ BEGIN_USER_FUNC(set_fake_slowpause)
 END_USER_FUNC()
 
 BEGIN_USER_FUNC(is_in_slowmo)
-	if (pPlayer->GetOffsetF(TSX_ISSLO_OFFSET))
+	if (pPlayer->GetOffsetF(TSX_ISSLO_OFFSET) > 0)
 		return amx_ftoc(pPlayer->GetOffsetF(TSX_SLOMO2_OFFSET));
 	return 0;
 END_USER_FUNC()
@@ -389,13 +389,13 @@ static cell AMX_NATIVE_CALL give_weapon(AMX *amx, cell *params)
 	pkvd.szClassName = (char *)STRING(pent->v.classname);
 	pkvd.szKeyName = "tsweaponid"; // weapon
 	pkvd.szValue = szTemp;
-	pkvd.fHandled = false;
+	pkvd.fHandled = FALSE;
 	MDLL_KeyValue(pent, &pkvd);
 
 	pkvd.szClassName = (char *)STRING(pent->v.classname);
 	pkvd.szKeyName = "wduration"; // duration
 	pkvd.szValue = "180";
-	pkvd.fHandled = false;
+	pkvd.fHandled = FALSE;
 	MDLL_KeyValue(pent, &pkvd);
 
 	sprintf(szTemp,"%d",(int)params[3]); 
@@ -403,7 +403,7 @@ static cell AMX_NATIVE_CALL give_weapon(AMX *amx, cell *params)
 	pkvd.szClassName = (char *)STRING(pent->v.classname);
 	pkvd.szKeyName = "wextraclip"; // clips
 	pkvd.szValue = szTemp;
-	pkvd.fHandled = false;
+	pkvd.fHandled = FALSE;
 	MDLL_KeyValue(pent, &pkvd);
 
 	sprintf(szTemp,"%d",(int)params[4]);
@@ -411,7 +411,7 @@ static cell AMX_NATIVE_CALL give_weapon(AMX *amx, cell *params)
 	pkvd.szClassName = (char *)STRING(pent->v.classname);
 	pkvd.szKeyName = "spawnflags"; // attachements :flashlight,lasersight,scope..
 	pkvd.szValue = szTemp;
-	pkvd.fHandled = false;
+	pkvd.fHandled = FALSE;
 	MDLL_KeyValue(pent, &pkvd);
 
 /*
@@ -449,13 +449,13 @@ static cell AMX_NATIVE_CALL create_pwup(AMX *amx, cell *params){ // pwup ,origin
 	pkvd.szClassName = (char *)STRING(pent->v.classname);
 	pkvd.szKeyName = "pwuptype"; // type
 	pkvd.szValue = szTemp;
-	pkvd.fHandled = false;
+	pkvd.fHandled = FALSE;
 	MDLL_KeyValue(pent, &pkvd);
 
 	pkvd.szClassName = (char *)STRING(pent->v.classname);
 	pkvd.szKeyName = "pwupduration"; // duration
 	pkvd.szValue = "60";
-	pkvd.fHandled = false;
+	pkvd.fHandled = FALSE;
 	MDLL_KeyValue(pent, &pkvd);
 
 /*

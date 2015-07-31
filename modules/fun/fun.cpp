@@ -127,7 +127,7 @@ static cell AMX_NATIVE_CALL get_user_godmode(AMX *amx, cell *params) // get_user
 
 	int godmode = 0;
 
-	if (pPlayer->v.takedamage == 0.0) {
+	if (pPlayer->v.takedamage == 0.0f) {
 		// God mode is enabled
 		godmode = 1;
 	}

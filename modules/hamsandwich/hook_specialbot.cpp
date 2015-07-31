@@ -40,7 +40,7 @@ CHamSpecialBotHandler::CHamSpecialBotHandler()
 	m_specialbot_vtable = NULL;
 }
 
-void CHamSpecialBotHandler::CheckClientKeyValue(int &clientIndex, char *infobuffer, const char *key, const char *value)
+void CHamSpecialBotHandler::CheckClientKeyValue(int clientIndex, char *infobuffer, const char *key, const char *value)
 {
 	if(m_specialbot_vtable != NULL)
 		return;
@@ -71,7 +71,7 @@ void CHamSpecialBotHandler::CheckClientKeyValue(int &clientIndex, char *infobuff
 	m_RHP_list.clear();
 }
 
-void CHamSpecialBotHandler::RegisterHamSpecialBot(AMX *amx, int &func, const char *function, int &post, Forward *pfwd)
+void CHamSpecialBotHandler::RegisterHamSpecialBot(AMX *amx, int func, const char *function, int post, Forward *pfwd)
 {	
 	if(m_specialbot_vtable == NULL)
 	{
@@ -82,7 +82,7 @@ void CHamSpecialBotHandler::RegisterHamSpecialBot(AMX *amx, int &func, const cha
 	RegisterChecked(amx, func, function, post, pfwd);
 }
 
-void CHamSpecialBotHandler::RegisterChecked(AMX *amx, int &func, const char *function, int &post, Forward *pfwd)
+void CHamSpecialBotHandler::RegisterChecked(AMX *amx, int func, const char *function, int post, Forward *pfwd)
 {
 	pfwd->AddRef();
 

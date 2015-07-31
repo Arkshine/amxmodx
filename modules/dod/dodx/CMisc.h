@@ -42,10 +42,8 @@ struct traceVault
 #define ACT_NADE_SHOT		(1<<0)
 #define ACT_NADE_PUT		(1<<1)
 #define ACT_NADE_THROW		(1<<2)
-
-#define ACT_ROCKET_NONE		(0)
-#define ACT_ROCKET_SHOT		(1<<0)
-#define ACT_ROCKET_PUT		(1<<3)
+#define ACT_ROCKET_SHOT		(1<<3)
+#define ACT_ROCKET_PUT		(1<<4)
 
 
 // *****************************************************
@@ -155,15 +153,14 @@ class CPlayer
 // *****************************************************
 class Grenades // : public CObject
 {
-  struct Obj
-  {
-    CPlayer* player;
-    edict_t* grenade;
-    float time;
-    int type;
-    Obj* next;
-  } *head;
-
+	struct Obj
+	{
+		CPlayer* player;
+		edict_t* grenade;
+		float time;
+		int type;
+		Obj* next;
+	} *head;
 
 public:
 	Grenades() { head = 0; }

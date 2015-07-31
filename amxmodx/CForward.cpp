@@ -543,7 +543,7 @@ int CForwardMngr::duplicateSPForward(int id)
 	return registerSPForward(fwd->m_Func, fwd->m_Amx, fwd->m_NumParams, fwd->m_ParamTypes);
 }
 
-int CForwardMngr::isSameSPForward(int id1, int id2)
+bool CForwardMngr::isSameSPForward(int id1, int id2)
 {
 	if (!isIdValid(id1) || !isIdValid(id2))
 	{

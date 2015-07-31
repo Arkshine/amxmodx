@@ -209,7 +209,7 @@ void ClientUserInfoChanged_Post( edict_t *pEntity, char *infobuffer )
 
 	if ( pPlayer->ingame ){
 		if ( strcmp(oldname,name) ) {
-			if (!tsstats_rank->value)
+			if (tsstats_rank->value <= 0.0f)
 				pPlayer->rank = g_rank.findEntryInRank( name, name );
 			else
 				pPlayer->rank->setName( name );

@@ -229,7 +229,7 @@ static cell AMX_NATIVE_CALL register_cwpn(AMX *amx, cell *params){ // name,logna
 	char *szName = MF_GetAmxString(amx, params[1], 0, &iLen);
 
 	strcpy(weaponData[i].name,szName);
-	weaponData[i].ammoSlot = true;
+	weaponData[i].ammoSlot = 1;
 	weaponData[i].melee = params[2] ? true:false;
 	return i;
 }

@@ -47,11 +47,6 @@ static cell AMX_NATIVE_CALL create_cvar(AMX *amx, cell *params)
 				LogError(amx, AMX_ERR_NATIVE, "The minimum value can not be above the maximum value");
 				return 0;
 			}
-			else if (maxVal < minVal)
-			{
-				LogError(amx, AMX_ERR_NATIVE, "The maximum value can not be below the minimum value");
-				return 0;
-			}
 		}
 
 		g_CvarManager.SetCvarMin(info, hasMin, minVal, plugin->getId());

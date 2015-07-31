@@ -86,7 +86,6 @@ static cell AMX_NATIVE_CALL lookup_sequence(AMX* amx, cell* params)
 	}
 
 	return -1;
-
 };
 // Float:set_controller(entid, controllerid, Float:value);
 static cell AMX_NATIVE_CALL set_controller(AMX* amx, cell* params)

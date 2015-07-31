@@ -37,11 +37,11 @@ class CHamSpecialBotHandler
 {
 public:
 	CHamSpecialBotHandler();
-	void CheckClientKeyValue(int &clientIndex, char *infobuffer, const char *key, const char *value);
-	void RegisterHamSpecialBot(AMX *amx, int &func, const char *function, int &post, Forward *pfwd);
+	void CheckClientKeyValue(int clientIndex, char *infobuffer, const char *key, const char *value);
+	void RegisterHamSpecialBot(AMX *amx, int func, const char *function, int post, Forward *pfwd);
 
 private:
-	void RegisterChecked(AMX *amx, int &func, const char *function, int &post, Forward *pfwd);
+	void RegisterChecked(AMX *amx, int func, const char *function, int post, Forward *pfwd);
 
 	ke::Vector<CRegisterHamParams*> m_RHP_list;
 	void **m_specialbot_vtable;

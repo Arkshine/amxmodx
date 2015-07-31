@@ -149,13 +149,16 @@ Nie ma damage event ...
 */
 void Client_Health_End(void* mValue)
 {
-    if ( !isModuleActive() )
+    if (!isModuleActive())
+		return;
+
+	if (!mPlayer)
 		return;
 
 	edict_t *enemy = mPlayer->pEdict->v.dmg_inflictor;
 	int damage = (int)mPlayer->pEdict->v.dmg_take;
 
-	if ( !mPlayer || !damage || !enemy )
+	if (!damage || !enemy )
 		return;
 	
 	int weapon = 0;

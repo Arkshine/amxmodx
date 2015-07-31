@@ -583,7 +583,7 @@ int RegEx::Replace(char *text, size_t textMaxLen, const char *replace, size_t re
 									 */
 									if (flags & PCRE_DUPNAMES)
 									{
-										memset(ovector, 0, REGEX_MAX_SUBPATTERNS);
+										memset(ovector, 0, REGEX_MAX_SUBPATTERNS * sizeof(int));
 
 										/**
 										 * pcre_copy_named_substring needs a vector containing sub-patterns ranges
@@ -664,11 +664,11 @@ int RegEx::Replace(char *text, size_t textMaxLen, const char *replace, size_t re
 							{
 								/**
 								 * Invalid specifier
-								 * Either hit EOS or missing }.
+								 * Missing }.
 								 * ${n  or ${nn  or ${nx or ${nnx
 								 *    ^        ^       ^        ^
 								 */
-								if (*walk == '\0' || *walk != '}')
+								if (*walk != '}')
 								{
 									backref = -1;
 								}

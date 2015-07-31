@@ -201,7 +201,7 @@ void Client_TSHealth_End(void* mValue){
 		}
 
 		pAttacker->frags += pAttacker->lastFrag; 
-			if ( pAttacker->frags != pAttacker->pEdict->v.frags ){
+			if ( pAttacker->frags != (int)pAttacker->pEdict->v.frags ){
 				// moze to sliding kill ?
 				if ( slpos )
 					killFlags |= TSKF_SLIDINGKILL;	

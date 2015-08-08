@@ -20,228 +20,299 @@
 #include <errno.h>
 #include <string.h>
 
-#ifdef _WIN32
-/* Windows */
-#include <winsock.h>
-#include <io.h>
-#define socklen_t int
+#if defined _WIN32
+// #	pragma comment(lib, "wsock32.lib")
+// #	pragma comment(lib, "ws2_32.lib")
+
+// #	include <WinSock2.h>
+#	include <winsock.h>
+#	include <io.h>
 #else
-/* Unix/Linux */
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <arpa/inet.h>
-#define closesocket(s) close(s)
+#	include <unistd.h>
+#	include <sys/types.h>
+#	include <sys/socket.h>
+#	include <netinet/in.h>
+#	include <netdb.h>
+#	include <arpa/inet.h>
+
+#	define closesocket(s) close(s)
 #endif
 
-// AMX Headers
 #include "amxxmodule.h"
 
-#define SOCKET_TCP 1
-#define SOCKET_UDP 2
+#include <sh_string.h>
 
-// And global Variables:
+// Initial size for recv() function's output buffer.
+//
+#define INITIAL_RECV_SIZE (8192)
 
-// native socket_open(_hostname[], _port, _protocol = SOCKET_TCP, &_error);
-static cell AMX_NATIVE_CALL socket_open(AMX *amx, cell *params)  /* 2 param */
-{ 
-    unsigned int port = params[2];
-    int len;
-    char* hostname = MF_GetAmxString(amx,params[1],0,&len); // Get the hostname from AMX
-	cell *err = MF_GetAmxAddr(amx, params[4]);
-    if(len == 0) { // just to prevent to work with a nonset hostname
-        *err = 2;  // server unknown
-        return -1;
-    }
-    *err = 0; // params[4] is error backchannel
-    struct sockaddr_in server;
-    struct hostent *host_info;
-    unsigned long addr;
-    int sock=-1;
-    int contr;
-    // Create a Socket
-    sock = socket(AF_INET, params[3]==SOCKET_TCP?SOCK_STREAM:SOCK_DGRAM, 0);
-    if (sock < 0) {
-        // Error, couldn't create a socket, so set an error and return.
-        *err = 1;
-        return -1;
-    }
-    
-    // Clear the server structure (set everything to 0)
-    memset( &server, 0, sizeof (server));
-    // Test the hostname, and resolve if needed
-    if ((addr = inet_addr(hostname)) != INADDR_NONE) {
-        // seems like hostname is a numeric ip, so put it into the structure
-        memcpy( (char *)&server.sin_addr, &addr, sizeof(addr));
-    }
-    else {
-        // hostname is a domain, so resolve it to an ip
-        host_info = gethostbyname(hostname);
-        if (host_info == NULL) {
-            // an error occured, the hostname is unknown
-            *err = 2;  // server unknown
-            return -1;
-        }
-        // If not, put it in the Server structure
-        memcpy( (char *)&server.sin_addr, host_info->h_addr, host_info->h_length);
-    }
-    // Set the type of the Socket
-    server.sin_family = AF_INET;
-    // Change the port to network byte order, and put it into the structure
-    server.sin_port = htons(port);
-    
-    // Not, let's try to open a connection to the server
-    contr = connect(sock, (struct sockaddr*)&server, sizeof( server));
-    if (contr < 0) {
-            // If an error occured cancel
-            *err = 3;  //error while connecting
-            return -1;
-    }
-    // Everything went well, so return the socket
-    return sock;
-}
-
-// native socket_close(_socket);
-static cell AMX_NATIVE_CALL socket_close(AMX *amx, cell *params)  /* 2 param */
+// Socket type for socket() function.
+//
+enum AmxxSocketType
 {
-    int socket = params[1];
-    //PRINT_CONSOLE("Function: Close | Socket: %i\n", socket);
-    #ifdef _WIN32 // On windows, check whether the sockets are initialized correctly
-    closesocket(socket);
-    #else
-    // Close the socket (linux/unix styled systems)
-    close(socket);
-    #endif
-    return 0;
-}
-
-// native socket_change(_socket, _timeout=100000);
-// 1 sec =1000000 usec
-static cell AMX_NATIVE_CALL socket_change(AMX *amx, cell *params)  /* 2 param */
-{
-    int socket = params[1];
-    unsigned int timeout = params[2];
-    //PRINT_CONSOLE("Function: Change | Socket: %i | Timeout: %i\n", socket, timeout);
-    // We need both a timeout structure and a fdset for our filedescriptor
-    fd_set rfds;
-    struct timeval tv;
-    // Fill in ...
-    FD_ZERO(&rfds);
-    FD_SET(socket, &rfds);
-    tv.tv_sec = 0;
-    tv.tv_usec = timeout;
-    // Now we "select", which will show us if new data is waiting in the socket's buffer
-    if (select(socket+1, &rfds, NULL, NULL, &tv) > 0) 
-       return 1; // Ok, new data, return it
-     else 
-       return 0; // No new data, return it
-}
-
-// native socket_recv(_socket, _data[], _length);
-static cell AMX_NATIVE_CALL socket_recv(AMX *amx, cell *params)  /* 2 param */
-{
-    int socket = params[1];
-    int length = params[3];
-    int tmp = -1;
-    // First we dynamicly allocate a block of heap memory for recieving our data
-    char *tmpchar = new char[length];
-    if(tmpchar == NULL) return -1; // If we didn't got a block, we have to quit here to avoid sigsegv
-    // And set it all to 0, because the memory could contain old trash
-    memset(tmpchar, 0, length);
-    // Now we recieve
-    tmp = recv(socket, tmpchar, length-1, 0);
-	if (tmp == -1)
-	{
-		delete [] tmpchar;
-		return -1;
-	}
-    // And put a copy of our recieved data into amx's string
-    tmpchar[tmp]='\0';
-    int nlen = 0;
-    //int max = params[3];
-    int max = length-1;
-    const char* src = tmpchar;
-    cell* dest = MF_GetAmxAddr(amx,params[2]);
-    while(max--&&nlen<tmp){
-     *dest++ = (cell)*src++;
-     nlen++;
-    }
-    *dest = 0;
-    // And we need to free up the space to avoid wasting memory
-    delete [] tmpchar;
-    // And finnally, return the what recv returnd
-    return tmp;
-}
-
-// native socket_send(_socket, _data[], _length);
-static cell AMX_NATIVE_CALL socket_send(AMX *amx, cell *params)  /* 3 param */
-{
-	// We get the string from amx
-	int len;
-	int socket = params[1];
-	char* data = MF_GetAmxString(amx,params[2],0,&len);
-	// And send it to the socket
-	return send(socket, data, len, 0);
-}
-
-static char *g_buffer = NULL;
-static size_t g_buflen = 0;
-
-// native socket_send2(_socket, _data[], _length);
-static cell AMX_NATIVE_CALL socket_send2(AMX *amx, cell *params)  /* 3 param */
-{
-	// We get the string from amx
-	int len = params[3];
-	int socket = params[1];
-	if ((size_t)len > g_buflen)
-	{
-		delete [] g_buffer;
-		g_buffer = new char[len+1];
-		g_buflen = len;
-	}
-
-	cell *pData = MF_GetAmxAddr(amx, params[2]);
-	char *pBuffer = g_buffer;
-
-	while (len--)
-		*pBuffer++ = (char)*pData++;
-
-	// And send it to the socket
-    return send(socket, g_buffer, params[3], 0);
-}
-
-AMX_NATIVE_INFO sockets_natives[] = {
-	{"socket_open", socket_open},
-	{"socket_close", socket_close},
-	{"socket_change", socket_change},
-	{"socket_recv", socket_recv},
-	{"socket_send", socket_send},
-	{"socket_send2", socket_send2},
-	{NULL, NULL}
+	SOCKET_TCP = 1,
+	SOCKET_UDP
 };
 
-void OnAmxxAttach()
+// socket_open(Hostname[], Port, Protocol = SOCKET_TCP, &errorNum)
+//
+static cell AMX_NATIVE_CALL socket_open(AMX * pAmx, cell * pParams)
+{
+	// Gets hostname, hostname's length and error address.
+	//
+	int Length = 0;
+	char * pName = MF_GetAmxString(pAmx, pParams[1], 0, &Length);
+	cell * pError = MF_GetAmxAddr(pAmx, pParams[4]);
+
+	// Hostname parameter is empty.
+	//
+	if (Length < 1)
+	{
+		*pError = 2;
+		return -1;
+	};
+
+	// Opens new socket.
+	//
+	int Socket = (int)socket(AF_INET, AmxxSocketType(pParams[3]) == SOCKET_TCP ? SOCK_STREAM : SOCK_DGRAM, 0);
+	if (Socket < 0)
+	{
+		*pError = 1;
+		return -1;
+	};
+
+	// Server information.
+	//
+	struct sockaddr_in Server;
+	memset(&Server, 0, sizeof Server);
+
+	// Gets address.
+	//
+	unsigned long Addr = 0UL;
+	if ((Addr = inet_addr(pName)) != INADDR_NONE)
+		memcpy((char *)&Server.sin_addr, &Addr, sizeof Addr);
+
+	else
+	{
+		struct hostent * pInfo = gethostbyname(pName);
+		if (!pInfo)
+		{
+			*pError = 2;
+			return -1;
+		};
+
+		memcpy((char *)&Server.sin_addr, pInfo->h_addr, pInfo->h_length);
+	};
+
+	Server.sin_family = AF_INET;
+	Server.sin_port = htons((unsigned short)pParams[2]);
+
+	// Connects.
+	//
+	if (connect(Socket, (struct sockaddr *)&Server, sizeof Server) < 0)
+	{
+		*pError = 3;
+		return -1;
+	};
+
+	// Done, no errors.
+	//
+	*pError = 0;
+	return Socket;
+};
+
+// socket_close(Socket)
+//
+static cell AMX_NATIVE_CALL socket_close(AMX *, cell * pParams)
+{
+	// Invalid socket.
+	//
+	if (pParams[1] < 0)
+		return 0;
+
+	// Closes socket.
+	//
+	closesocket(pParams[1]);
+	return 1;
+};
+
+// socket_change(Socket, Timeout = 100000)
+//
+static cell AMX_NATIVE_CALL socket_change(AMX *, cell * pParams)
+{
+	// Gets the socket.
+	//
+	int Socket = pParams[1];
+	if (Socket < 0)
+		return 0;
+
+	unsigned int Timeout = (unsigned int)pParams[2];
+
+	fd_set Set;
+	FD_ZERO(&Set);
+	FD_SET(Socket, &Set);
+
+	struct timeval TV;
+	TV.tv_sec = 0;
+	TV.tv_usec = Timeout;
+
+	return select(Socket + 1, &Set, NULL, NULL, &TV) > 0 ? 1 : 0;
+};
+
+// socket_recv(Socket, Data[], maxLength)
+//
+static cell AMX_NATIVE_CALL socket_recv(AMX * pAmx, cell * pParams)
+{
+	// Gets the socket.
+	//
+	int Socket = pParams[1];
+	if (Socket < 0)
+		return -1;
+
+	// Gets the maximum length.
+	//
+	size_t maxLength = (size_t)pParams[3];
+
+	// Data to store buffer in.
+	//
+	String Buffer;
+	int Res = 0;
+
+	// While getting data.
+	//
+	do
+	{
+		// Allocates new block.
+		//
+		char * pRecv = (char *)malloc(INITIAL_RECV_SIZE + 1);
+
+		// No memory.
+		//
+		if (!pRecv)
+			break;
+
+		// Receiving block.
+		//
+		Res = recv(Socket, pRecv, INITIAL_RECV_SIZE, 0);
+
+		// Block has size.
+		//
+		if (Res > 0)
+		{
+			// Truncates where needed.
+			//
+			pRecv[Res] = char('\000');
+
+			// Appends block to buffer.
+			//
+			Buffer.append(pRecv);
+		};
+
+		// Frees the memory block.
+		//
+		free(pRecv);
+		pRecv = NULL;
+	} while (Res > 0);
+
+	// Sets the output string.
+	//
+	size_t Written = 0;
+	cell * pDestination = MF_GetAmxAddr(pAmx, pParams[2]);
+	while (maxLength > Written)
+		*pDestination++ = (cell)Buffer.at(Written++);
+
+	*pDestination = (cell)char('\000');
+
+	// Returns written bytes.
+	//
+	return (cell)(maxLength < Buffer.size() ? maxLength : Buffer.size());
+};
+
+// native socket_send(Socket, Data[], Length)
+//
+static cell AMX_NATIVE_CALL socket_send(AMX * pAmx, cell * pParams)
+{
+	// Gets the socket.
+	//
+	int Socket = pParams[1];
+	if (Socket < 0)
+		return -1;
+
+	size_t reqLen = (size_t)pParams[3];
+
+	int curLen = 0;
+	char * pData = MF_GetAmxString(pAmx, pParams[2], 0, &curLen);
+	if (reqLen > (size_t)curLen)
+		reqLen = curLen;
+
+	return send(Socket, pData, reqLen, 0);
+};
+
+// socket_send2(Socket, Data[], Length)
+//
+static cell AMX_NATIVE_CALL socket_send2(AMX * pAmx, cell * pParams)
+{
+	// Gets the socket.
+	//
+	int Socket = pParams[1];
+	if (Socket < 0)
+		return -1;
+
+	// Gets the desired length.
+	//
+	unsigned int reqLength = (unsigned int)pParams[3];
+
+	// Allocates buffer.
+	//
+	String Buffer;
+
+	// Gets data.
+	//
+	cell * pData = MF_GetAmxAddr(pAmx, pParams[2]);
+
+	// Appends data to the buffer.
+	//
+	size_t curLen = 0;
+	while (*pData)
+	{
+		Buffer.append(char(*pData++));
+		curLen++;
+	};
+
+	if (reqLength > curLen)
+		reqLength = curLen;
+
+	// Sends buffer.
+	//
+	return send(Socket, Buffer.c_str(), reqLength, 0);
+};
+
+AMX_NATIVE_INFO sockets_natives[] =
+{
+	{ "socket_open", socket_open },
+	{ "socket_close", socket_close },
+	{ "socket_change", socket_change },
+	{ "socket_recv", socket_recv },
+	{ "socket_send", socket_send },
+	{ "socket_send2", socket_send2 },
+
+	{ NULL, NULL }
+};
+
+void OnAmxxAttach(void)
 {
 	MF_AddNatives(sockets_natives);
-    // And, if win32, we have to specially start up the winsock environment
-    #ifdef _WIN32  
-        short wVersionRequested;
-        WSADATA wsaData;
-        wVersionRequested = MAKEWORD (1, 1);
-        if (WSAStartup (wVersionRequested, &wsaData) != 0) {
-            MF_Log("Sockets Module: Error while starting up winsock environment.!");
-        }
-    #endif
-    return;
-}
 
-void OnAmxxDetach()
+#if defined _WIN32
+	WSADATA Data;
+	if (WSAStartup(MAKEWORD(1, 1), &Data))
+		MF_Log("Sockets Module @ WSAStartup() :  Error while starting up WinSock environment!");
+#endif
+};
+
+void OnAmxxDetach(void)
 {
-    #ifdef _WIN32
-    WSACleanup();
-    #endif
-    delete [] g_buffer;
-    return;
-}
+#if defined _WIN32
+	WSACleanup();
+#endif
+};

@@ -139,13 +139,7 @@ public plugin_init()
 	RestEquipAmmoCvarPointer = register_cvar("amx_restrequipammo", "000000000");
 }
 
-public plugin_cfg()
-{
-	// Let's delay right after config files in maps/ are executed.
-	set_task(6.2, "Task_DelayConfig");
-}
-
-public DelayConfig()
+public OnConfigsExecuted()
 {
 	new configsDir[64];
 	get_configsdir(configsDir, charsmax(configsDir));

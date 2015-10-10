@@ -202,7 +202,7 @@ public ConsoleCommand_WeaponRestriction(id, level, cid)
 
 		if (numArgs < 3)
 		{
-			arrayset(BlockedItems, status, sizeof BlockedItems);
+			arrayset(BlockedItems, status, sizeof(BlockedItems));
 			console_print(id, "%l", status ? "EQ_WE_RES" : "EQ_WE_UNRES");
 			ModifiedState = true;
 		}
@@ -217,7 +217,7 @@ public ConsoleCommand_WeaponRestriction(id, level, cid)
 
 				if ((a = findMenuId(argument)) != -1)
 				{
-					for (j = 0; j < sizeof ItemsNames[] && ItemsNames[a][j][0] != EOS; ++j)
+					for (j = 0; j < sizeof(ItemsNames[]) && ItemsNames[a][j][0] != EOS; ++j)
 					{
 						BlockedItems[SlotToItemId[a][j]] = status;
 					}
@@ -253,7 +253,7 @@ public ConsoleCommand_WeaponRestriction(id, level, cid)
 
 		if (item == -1) // Item types.
 		{
-			for (i = 0; i < sizeof MenuTitleNames; ++i)
+			for (i = 0; i < sizeof(MenuTitleNames); ++i)
 			{
 				console_print(id, "%3d: %-32.31s", i + 1, _T(MenuTitleNames[i], id));
 			}
@@ -268,7 +268,7 @@ public ConsoleCommand_WeaponRestriction(id, level, cid)
 
 			console_print(id, "  %-32.31s   %-10.9s   %-9.8s", langName, langValue, langStatus);
 
-			for (i = 0; i < sizeof ItemsNames[] && ItemsNames[item][i][0] != EOS; ++i)
+			for (i = 0; i < sizeof(ItemsNames[]) && ItemsNames[item][i][0] != EOS; ++i)
 			{
 				LookupLangKey(langOnOff, charsmax(langOnOff), isItemBlocked(item, i) ? "ON" : "OFF", id);
 				console_print(id, "  %-32.31s   %-10.9s   %-9.8s", _T(ItemsNames[item][i], id), AliasNames[item][i], langOnOff);
@@ -287,7 +287,7 @@ public ConsoleCommand_WeaponRestriction(id, level, cid)
 	else if(ch1 == 'l' && ch2 == 'o')  // load
 	{
 		// Clear current settings.
-		arrayset(BlockedItems, 0, sizeof BlockedItems);
+		arrayset(BlockedItems, 0, sizeof(BlockedItems));
 
 		new argument[64];
 
@@ -341,7 +341,7 @@ displayMenu(id, itemType)
 	// -1 because arrays are zero-based, avoids to do -1 everywhere below.
 	if (--itemType < 0)  // Main menu
 	{
-		for (i = 0; i < sizeof MenuTitleNames; ++i)
+		for (i = 0; i < sizeof(MenuTitleNames); ++i)
 		{
 			menu_additem(menu, _T(MenuTitleNames[i], id));
 		}
@@ -424,7 +424,7 @@ public ActionMenu(id, menu, item)
 
 findMenuId(const name[])
 {
-	for (new i = 0; i < sizeof MenuAliasNames ; ++i)
+	for (new i = 0; i < sizeof(MenuAliasNames); ++i)
 	{
 		if (equali(name, MenuAliasNames[i]))
 		{
@@ -444,8 +444,8 @@ bool:isItemBlocked(position, slot = -1)
 
 findItemIdFromAlias(const alias[], &i = 0, &j = 0)
 {
-	for (i = 0; i < sizeof AliasNames; ++i)
-	for (j = 0; j < sizeof AliasNames[] && AliasNames[i][j][0] != EOS; ++j)
+	for (i = 0; i < sizeof(AliasNames); ++i)
+	for (j = 0; j < sizeof(AliasNames[]) && AliasNames[i][j][0] != EOS; ++j)
 	{
 		if (equali(alias, AliasNames[i][j]))
 		{
@@ -509,9 +509,9 @@ bool:saveSettings(const filename[])
 
 	fprintf(fp, "%l", "CONFIG_FILE_HEADER", PluginName);
 
-	for (new i = 0, j; i < sizeof ItemsNames; ++i)
+	for (new i = 0, j; i < sizeof(ItemsNames); ++i)
 	{
-		for (j = 0; j < sizeof ItemsNames[] && ItemsNames[i][j][0] != EOS; ++j)
+		for (j = 0; j < sizeof(ItemsNames[]) && ItemsNames[i][j][0] != EOS; ++j)
 		{
 			if (isItemBlocked(i, j))
 			{

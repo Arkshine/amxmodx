@@ -162,7 +162,7 @@ public CS_OnBuy(index, item)
 {
 	if (isItemBlocked(item))
 	{
-		client_print(index, print_center, "%L", index, "RESTRICTED_ITEM");
+		client_print(index, print_center, "%l", "RESTRICTED_ITEM");
 		return PLUGIN_HANDLED;
 	}
 
@@ -203,7 +203,7 @@ public ConsoleCommand_WeaponRestriction(id, level, cid)
 		if (numArgs < 3)
 		{
 			arrayset(BlockedItems, status, sizeof BlockedItems);
-			console_print(id, "%L", id, status ? "EQ_WE_RES" : "EQ_WE_UNRES");
+			console_print(id, "%l", status ? "EQ_WE_RES" : "EQ_WE_UNRES");
 			ModifiedState = true;
 		}
 		else
@@ -222,21 +222,21 @@ public ConsoleCommand_WeaponRestriction(id, level, cid)
 						BlockedItems[SlotToItemId[a][j]] = status;
 					}
 
-					console_print(id, "%s %L %L", MenuAliasNames[a], id, (a < 5) ? "HAVE_BEEN" : "HAS_BEEN", id, status ? "RESTRICTED" : "UNRESTRICTED");
+					console_print(id, "%s %l %l", MenuAliasNames[a], (a < 5) ? "HAVE_BEEN" : "HAS_BEEN", status ? "RESTRICTED" : "UNRESTRICTED");
 					ModifiedState = found = true;
 				}
 				else if ((a = findItemIdFromAlias(argument)) != -1)
 				{
 					BlockedItems[a] = status;
 
-					console_print(id, "%L %L %L", id, ItemsNames[a][j], id, "HAS_BEEN", id, status ? "RESTRICTED" : "UNRESTRICTED");
+					console_print(id, "%l %l %l", ItemsNames[a][j], "HAS_BEEN", status ? "RESTRICTED" : "UNRESTRICTED");
 					ModifiedState = found = true;
 				}
 			}
 
 			if (!found)
 			{
-				console_print(id, "%L", id, "NO_EQ_WE");
+				console_print(id, "%l", "NO_EQ_WE");
 			}
 		}
 	}
@@ -249,7 +249,7 @@ public ConsoleCommand_WeaponRestriction(id, level, cid)
 			item = clamp(str_to_num(argument) - 1, 0, charsmax(ItemsNames));
 		}
 
-		console_print(id, "^n----- %L: -----^n", id, "WEAP_RES");
+		console_print(id, "^n----- %l: -----^n", "WEAP_RES");
 
 		if (item == -1) // Item types.
 		{
@@ -282,7 +282,7 @@ public ConsoleCommand_WeaponRestriction(id, level, cid)
 			ModifiedState = false;
 		}
 
-		console_print(id, "%L", id, ModifiedState ? "REST_COULDNT_SAVE" : "REST_CONF_SAVED", ConfigFileName);
+		console_print(id, "%l", ModifiedState ? "REST_COULDNT_SAVE" : "REST_CONF_SAVED", ConfigFileName);
 	}
 	else if(ch1 == 'l' && ch2 == 'o')  // load
 	{
@@ -304,21 +304,21 @@ public ConsoleCommand_WeaponRestriction(id, level, cid)
 			ModifiedState = true;
 		}
 
-		console_print(id, "%L", id, ModifiedState ? "REST_CONF_LOADED" : "REST_COULDNT_LOAD", argument);
+		console_print(id, "%l", ModifiedState ? "REST_CONF_LOADED" : "REST_COULDNT_LOAD", argument);
 	}
 	else
 	{
-		console_print(id, "%L", id, "COM_REST_USAGE");
-		console_print(id, "%L", id, "COM_REST_COMMANDS");
-		console_print(id, "%L", id, "COM_REST_ON");
-		console_print(id, "%L", id, "COM_REST_OFF");
-		console_print(id, "%L", id, "COM_REST_ONV");
-		console_print(id, "%L", id, "COM_REST_OFFV");
-		console_print(id, "%L", id, "COM_REST_LIST");
-		console_print(id, "%L", id, "COM_REST_SAVE");
-		console_print(id, "%L", id, "COM_REST_LOAD");
-		console_print(id, "%L", id, "COM_REST_VALUES");
-		console_print(id, "%L", id, "COM_REST_TYPE");
+		console_print(id, "%l", "COM_REST_USAGE");
+		console_print(id, "%l", "COM_REST_COMMANDS");
+		console_print(id, "%l", "COM_REST_ON");
+		console_print(id, "%l", "COM_REST_OFF");
+		console_print(id, "%l", "COM_REST_ONV");
+		console_print(id, "%l", "COM_REST_OFFV");
+		console_print(id, "%l", "COM_REST_LIST");
+		console_print(id, "%l", "COM_REST_SAVE");
+		console_print(id, "%l", "COM_REST_LOAD");
+		console_print(id, "%l", "COM_REST_VALUES");
+		console_print(id, "%l", "COM_REST_TYPE");
 	}
 
 	return PLUGIN_HANDLED;
@@ -331,8 +331,10 @@ displayMenu(id, itemType)
 		return;
 	}
 
+	SetGlobalTransTarget(id);
+
 	new menuTitle[64], menuBody[128], i;
-	formatex(menuTitle, charsmax(menuTitle), "\y%L", id, "REST_WEAP");
+	formatex(menuTitle, charsmax(menuTitle), "\y%l", "REST_WEAP");
 
 	new menu = menu_create(menuTitle, "ActionMenu");
 
@@ -347,12 +349,12 @@ displayMenu(id, itemType)
 	else // Sub-menus
 	{
 		// Add item type title to main title.
-		format(menuTitle, charsmax(menuTitle), "%s > \d%L", menuTitle, id, MenuTitleNames[itemType]);
+		format(menuTitle, charsmax(menuTitle), "%s > \d%l", menuTitle, MenuTitleNames[itemType]);
 		menu_setprop(menu, MPROP_TITLE, menuTitle);
 
 		for (i = 0; i < 8 && ItemsNames[itemType][i][0] != EOS; ++i)
 		{
-			formatex(menuBody, charsmax(menuBody), "%L\y\R%L", id, ItemsNames[itemType][i], id, isItemBlocked(itemType, i) ? "ON" : "OFF");
+			formatex(menuBody, charsmax(menuBody), "%l\y\R%l", ItemsNames[itemType][i], isItemBlocked(itemType, i) ? "ON" : "OFF");
 			menu_additem(menu, menuBody);
 		}
 	}
@@ -361,7 +363,7 @@ displayMenu(id, itemType)
 	menu_fillblanks(menu, itemType >= 0 ? 8 - i : 0, .newLineFirst = true);
 
 	// Add Save item.
-	formatex(menuBody, charsmax(menuBody), "%L \y\R%s", id, "SAVE_SET", ModifiedState ? "*" : "");
+	formatex(menuBody, charsmax(menuBody), "%l \y\R%s", "SAVE_SET", ModifiedState ? "*" : "");
 	menu_additem(menu, menuBody);
 
 	menu_setprop(menu, MPROP_EXITNAME, _T(itemType < 0 ? "EXIT" : "BACK", id));
@@ -387,7 +389,7 @@ public ActionMenu(id, menu, item)
 		if (item == 8)
 		{
 			// Save item(s).
-			client_print(id, print_chat, "* %L", id, (ModifiedState = !saveSettings(ConfigFileName)) ? "CONF_SAV_FAIL" : "CONF_SAV_SUC");
+			client_print(id, print_chat, "* %l", (ModifiedState = !saveSettings(ConfigFileName)) ? "CONF_SAV_FAIL" : "CONF_SAV_SUC");
 			displayMenu(id, position);
 		}
 		else if (!position)
@@ -503,7 +505,9 @@ bool:saveSettings(const filename[])
 		return false;
 	}
 
-	fprintf(fp, "%L", LANG_SERVER, "CONFIG_FILE_HEADER", PluginName);
+	SetGlobalTransTarget(LANG_SERVER);
+
+	fprintf(fp, "%l", "CONFIG_FILE_HEADER", PluginName);
 
 	for (new i = 0, j; i < sizeof ItemsNames; ++i)
 	{
@@ -511,7 +515,7 @@ bool:saveSettings(const filename[])
 		{
 			if (isItemBlocked(i, j))
 			{
-				fprintf(fp, "%-16.15s ; %L^n", AliasNames[i][j], LANG_SERVER, ItemsNames[i][j]);
+				fprintf(fp, "%-16.15s ; %l^n", AliasNames[i][j], ItemsNames[i][j]);
 			}
 		}
 	}
@@ -567,7 +571,7 @@ bool:loadSettings(const filename[])
 // Is it somehow used by others plugins?
 public blockcommand(id)
 {
-	client_print(id, print_center, "%L", id, "RESTRICTED_ITEM");
+	client_print(id, print_center, "%l", "RESTRICTED_ITEM");
 	return PLUGIN_HANDLED;
 }
 

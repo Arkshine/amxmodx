@@ -37,9 +37,7 @@
 
 new const PluginName[] = "Restrict Weapons";
 
-const MaxClients = 32;
-
-new MenuPosition[MaxClients + 1];
+new MenuPosition[MAX_PLAYERS + 1];
 new ModifiedState;
 new ConfigFileName[64];
 

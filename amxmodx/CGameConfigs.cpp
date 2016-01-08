@@ -654,7 +654,8 @@ bool CGameConfig::Reparse(char *error, size_t maxlength)
 			g_LibSys.PathFormat(path, sizeof(path), "custom/%s.txt", m_File);
 			return EnterFile(path, error, maxlength);
 		}
-		return true;
+
+		return false;
 	}
 
 	SMCError err;

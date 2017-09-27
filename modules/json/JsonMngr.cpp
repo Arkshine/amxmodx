@@ -146,7 +146,7 @@ bool JSONMngr::InitArray(JS_Handle *handle)
 		return false;
 	}
 
- 	*handle = _MakeHandle(JSArray, Handle_Array, true);
+	*handle = _MakeHandle(JSArray, Handle_Array, true);
 	return true;
 }
 

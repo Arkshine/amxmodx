@@ -319,7 +319,14 @@ bool Menu::Display(int player, page_t page)
 	pPlayer->keys = 0;
 	pPlayer->menu = 0;
 
-	UTIL_FakeClientCommand(pPlayer->pEdict, "menuselect", "10", 0);
+	static size_t recursionCount = 0;
+
+	if (!recursionCount++)
+	{
+		UTIL_FakeClientCommand(pPlayer->pEdict, "menuselect", "10");
+	}
+
+	recursionCount = 0;
 
 	pPlayer->keys = keys;
 	pPlayer->menu = menuId;

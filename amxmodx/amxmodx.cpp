@@ -1269,7 +1269,14 @@ static cell AMX_NATIVE_CALL show_menu(AMX *amx, cell *params) /* 3 param */
 					return 0;
 				}
 
-				UTIL_FakeClientCommand(pPlayer->pEdict, "menuselect", "10", 0);
+				static size_t recursionCount = 0;
+
+				if (!recursionCount++)
+				{
+					UTIL_FakeClientCommand(pPlayer->pEdict, "menuselect", "10");
+				}
+
+				recursionCount = 0;
 			}
 		}
 	}
@@ -1295,7 +1302,14 @@ static cell AMX_NATIVE_CALL show_menu(AMX *amx, cell *params) /* 3 param */
 				return 0;
 			}
 
-			UTIL_FakeClientCommand(pPlayer->pEdict, "menuselect", "10", 0);
+			static size_t recursionCount = 0;
+
+			if (!recursionCount++)
+			{
+				UTIL_FakeClientCommand(pPlayer->pEdict, "menuselect", "10");
+			}
+
+			recursionCount = 0;
 		}
 		else
 		{

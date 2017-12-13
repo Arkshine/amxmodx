@@ -30,6 +30,7 @@
 #define MPROP_PAGE_CALLBACK	11	/* Function to be called on Back and Next (param1 = string) */
 								/* public function(id, status); where status is either MENU_BACK or MENU_MORE */
 								/* Pass NULL_STRING to disable the callback */
+#define MPROP_SHOWPAGE	12		/* Show page number in menu title (param1 = bool, true = default) */
 
 #define MEXIT_NORMAL	0		/* DEPRECATED, do not use (has no effect) */
 #define MENUPAD_NONE	0		/* DEPRECATED, do not use (has no effect) */

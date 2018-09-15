@@ -26,7 +26,7 @@ bool HasInternalCommandForward;
 bool HasOnBuyAttemptForward;
 bool HasOnBuyForward;
 
-int *UseBotArgs;
+bool *UseBotArgs;
 const char **BotArgs;
 
 CDetour *ClientCommandDetour;
@@ -449,12 +449,12 @@ void CtrlDetours_ClientCommand(bool set)
 
 			if (MainConfig->GetOffset("UseBotArgs", &type))
 			{
-				UseBotArgs = get_pdata<decltype(UseBotArgs)>(base, type.fieldOffset);
+				UseBotArgs = get_pdata_direct<decltype(UseBotArgs)>(base, type.fieldOffset);
 			}
 
 			if (MainConfig->GetOffset("BotArgs", &type))
 			{
-				BotArgs = get_pdata<decltype(BotArgs)>(base, type.fieldOffset);
+				BotArgs = get_pdata_direct<decltype(BotArgs)>(base, type.fieldOffset);
 			}
 #else
 			void *address = nullptr;

@@ -83,7 +83,7 @@ extern server_t *Server;
 extern void **GameRules;
 extern void *GameRulesRH;
 
-extern int *UseBotArgs;
+extern bool *UseBotArgs;
 extern const char **BotArgs;
 
 extern bool HasReHlds;

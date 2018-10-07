@@ -107,13 +107,6 @@ void OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax)
 	RETURN_META(MRES_IGNORED);
 }
 
-void OnServerActivate_Post(edict_t *pEdictList, int edictCount, int clientMax)
-{
-	DisableMessageHooks();
-
-	RETURN_META(MRES_IGNORED);
-}
-
 void OnServerDeactivate()
 {
 	if (!HasReGameDll && !ClientCommandDetour)

@@ -175,7 +175,7 @@
 // #define FN_ClientPutInServer_Post			ClientPutInServer_Post
 // #define FN_ClientCommand_Post				ClientCommand_Post
 // #define FN_ClientUserInfoChanged_Post		ClientUserInfoChanged_Post
-#define FN_ServerActivate_Post					OnServerActivate_Post
+// #define FN_ServerActivate_Post					OnServerActivate_Post
 // #define FN_ServerDeactivate_Post				ServerDeactivate_Post
 // #define FN_PlayerPreThink_Post				PlayerPreThink_Post
 // #define FN_PlayerPostThink_Post				PlayerPostThink_Post
